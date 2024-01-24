@@ -111,13 +111,13 @@ class ISABinaryFeatures:
         return isa_binary_features
 
     @classmethod
-    def load_or_create(cls, achitecture_binary_files_dict: dict[str, list[str]], binary_file_feature_computer: FeatureComputerCollection, *, labels_dict: Optional[dict[str, list[str]]] = None) -> "ISABinaryFeatures":
+    def load_or_create(cls, achitecture_binary_files_dict: dict[str, list[str]], feature_computer_collection: FeatureComputerCollection, *, labels_dict: Optional[dict[str, list[str]]] = None) -> "ISABinaryFeatures":
         for binary_files in achitecture_binary_files_dict.values():
             binary_files.sort()
 
         achitecture_binary_files_json = json.dumps(
             achitecture_binary_files_dict, sort_keys=True)
-        binary_file_feature_computer_str = binary_file_feature_computer.get_compute_methods_str()
+        binary_file_feature_computer_str = feature_computer_collection.get_feature_computer_str()
         labels_json = json.dumps(labels_dict)
         parameter_hash = xxhash.xxh32(",".join([achitecture_binary_files_json,
                                                 binary_file_feature_computer_str, labels_json])).hexdigest()
@@ -126,7 +126,7 @@ class ISABinaryFeatures:
 
         if not isa_binary_feature_path.exists():
             isa_binary_features = cls.from_binary_files(
-                parameter_hash, achitecture_binary_files_dict, binary_file_feature_computer, labels_dict=labels_dict)
+                parameter_hash, achitecture_binary_files_dict, feature_computer_collection, labels_dict=labels_dict)
             if not isa_binary_feature_path.parent.exists():
                 isa_binary_feature_path.parent.mkdir()
             with open(isa_binary_feature_path, "wb") as fid:
@@ -139,7 +139,7 @@ class ISABinaryFeatures:
             return isa_binary_features
 
     @staticmethod
-    def from_binary_files(identifier: str, achitecture_binary_files_dict: dict[str, list[str]], binary_file_feature_computer: FeatureComputerCollection, *, labels_dict: Optional[dict[str, list[str]]] = None) -> "ISABinaryFeatures":
+    def from_binary_files(identifier: str, achitecture_binary_files_dict: dict[str, list[str]], feature_computer_collection: FeatureComputerCollection, *, labels_dict: Optional[dict[str, list[str]]] = None) -> "ISABinaryFeatures":
         if labels_dict is None:
             labels_dict = dict((label["architecture_text"], label)
                                for label in Labels.get_labels_combined())
@@ -173,7 +173,7 @@ class ISABinaryFeatures:
             for binary_file in binary_files:
                 binaryfile_labels_list.append((binary_file, labels))
 
-        features, features_counts = tuple(zip(*(binary_file_feature_computer.compute(
+        features, features_counts = tuple(zip(*(feature_computer_collection.compute(
             binary_file, additional_labels=labels) for binary_file, labels in binaryfile_labels_list)))
         features_count = max(features_counts)
 

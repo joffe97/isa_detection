@@ -1,15 +1,14 @@
 from sklearn.base import ClassifierMixin
 import sklearn
-from pandas import DataFrame, Series
+from pandas import DataFrame
 
 from domains.feature.feature_computer_collection import FeatureComputerCollection
-from domains.feature.isa_binary_features_picker import ISABinaryFeaturesPicker
-from domains.feature.feature_computers import FeatureComputer
-from domains.model.isa_model_collection import ISAModelCollection
+from domains.system.system_modes import SystemMode
 
 
 class System():
-    def __init__(self, feature_computer_collections: list[FeatureComputerCollection], classifiers: list[ClassifierMixin], files_per_architecture_list: list[int]) -> None:
+    def __init__(self, system_mode: SystemMode, feature_computer_collections: list[FeatureComputerCollection], classifiers: list[ClassifierMixin], files_per_architecture_list: list[int]) -> None:
+        self.system_mode = system_mode
         self.feature_computer_collections = feature_computer_collections
         self.classifiers = classifiers
         self.files_per_architecture_list = files_per_architecture_list
@@ -18,48 +17,17 @@ class System():
         return [(feature_computer_collection, sklearn.base.clone(classifier), files_per_architecture)
                 for classifier in self.classifiers for feature_computer_collection in self.feature_computer_collections for files_per_architecture in self.files_per_architecture_list]
 
-    def run_with_features_and_classifier(self, binary_file_feature_computer: FeatureComputerCollection, classifier: object, files_per_architecture: int):
-        isa_binary_features = ISABinaryFeaturesPicker(
-            binary_file_feature_computer).isadetect_features_full_binaries(files_per_architecture)
-
-        isa_model_collection = ISAModelCollection(classifier).with_isa_binary_features(
-            isa_binary_features)
-
-        precision = isa_model_collection.mean_precision()
-
-        isa_model_collection.print_precisions()
-        return precision
-
-    def run_with_features_and_classifier_cpu_rec(self, binary_file_feature_computer: FeatureComputerCollection, classifier: object, files_per_architecture: int):
-        isa_binary_features = ISABinaryFeaturesPicker(
-            binary_file_feature_computer).isadetect_features_full_binaries(files_per_architecture)
-        isa_model_collection = ISAModelCollection(classifier).with_isa_binary_features(
-            isa_binary_features)
-        isa_model = isa_model_collection.isa_models[1]
-        isa_model.train()
-        classifier_fitted = isa_model.classifier
-
-        cpu_rec_features = ISABinaryFeaturesPicker(
-            binary_file_feature_computer).cpu_rec_corpus_features()
-        cpu_rec_model_collection = ISAModelCollection(
-            classifier_fitted).with_isa_binary_features(cpu_rec_features, clone_classifier=False)
-
-        precision = cpu_rec_model_collection.mean_precision()
-
-        cpu_rec_model_collection.print_precisions()
-        return precision
-
-    def get_precisions(self) -> tuple[list[str], object, int, float]:
+    def get_precisions(self) -> tuple[list[str], ClassifierMixin, int, float]:
         combinations = self.create_model_combinations()
 
         results = []
         for (feature_computer_collection, classifier, files_per_architecture) in combinations:
-            precision = self.run_with_features_and_classifier_cpu_rec(
+            precision = self.system_mode.run(
                 feature_computer_collection,
                 classifier,
                 files_per_architecture)
 
-            feature_computer_method_strs = feature_computer_collection.get_compute_methods_strs()
+            feature_computer_method_strs = feature_computer_collection.get_feature_computer_strs()
             results.append(
                 (feature_computer_method_strs, classifier, files_per_architecture, precision))
             print(

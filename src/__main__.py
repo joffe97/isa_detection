@@ -5,18 +5,23 @@ from sklearn.svm import SVC
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
+from domains.feature.feature_computer_collection import FeatureComputerCollection
+from domains.system import system_modes
 
 from domains.system.system import System
 from domains.feature.feature_computers import *
 
 
 if __name__ == "__main__":
-    binary_file_feature_computers_methods = [
+    system_mode = system_modes.TestModel()
+
+    feature_computer_collections = [
+        FeatureComputerCollection(feature_computers) for feature_computers in
         # [Trigrams]
         # [Bigrams],
-        [ByteFrequencyDistribution],
-        [EndiannessSignatures],
-        [EndiannessSignatures, ByteFrequencyDistribution]
+        [[ByteFrequencyDistribution],
+         [EndiannessSignatures],
+         [EndiannessSignatures, ByteFrequencyDistribution]]
     ]
     random_state = 42
     classifiers = [
@@ -40,6 +45,6 @@ if __name__ == "__main__":
         10
     ]
 
-    result = System(binary_file_feature_computers_methods,
+    result = System(system_mode, feature_computer_collections,
                     classifiers, files_per_architecture_list).run()
     print(result)

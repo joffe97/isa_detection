@@ -46,11 +46,6 @@ class ISAModel:
     def Y_test(self) -> Series:
         return self.train_test_split[3]
 
-    # @property
-    # def architecture_text(self) -> Optional[str]:
-    #     return next(isa_binary_features.dataframe["architecture_text"][i] for i, architecture_id_tmp in enumerate(
-    #         isa_binary_features.dataframe["architecture"]) if architecture_id_tmp == self.architecture_id)
-
     def __get_cache_file_path(self, data_dir: str) -> Optional[pathlib.Path]:
         if self.identifier is None:
             return None
@@ -75,9 +70,6 @@ class ISAModel:
                 self.classifier = pickle.load(fid)
                 return
 
-        # n_estimators = 50
-        # clf = BaggingClassifier(classifier(),
-        #                         n_estimators=n_estimators, n_jobs=-1)
         self.classifier.fit(self.X_train, self.Y_train)
 
         if model_file_path is not None:
