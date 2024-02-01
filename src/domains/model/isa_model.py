@@ -4,12 +4,14 @@ import pathlib
 import sklearn
 import pickle
 import numpy as np
+from sklearn.base import ClassifierMixin
 
 from config import CACHE_PATH
+from domains.model.info.isa_model_result import ISAModelResult
 
 
 class ISAModel:
-    def __init__(self, architecture_id: int, identifier: Optional[str] = None, train_test_split: tuple[DataFrame, Series, DataFrame, Series] = None, classifier: object = None, architecture_text="Unknown") -> None:
+    def __init__(self, architecture_id: int, identifier: Optional[str] = None, train_test_split: tuple[DataFrame, Series, DataFrame, Series] = None, classifier: ClassifierMixin = None, architecture_text="Unknown") -> None:
         self.architecture_id = architecture_id
         self.identifier = identifier
         self.train_test_split = train_test_split
@@ -101,3 +103,7 @@ class ISAModel:
                 pickle.dump(precision, fid)
 
         return precision
+
+    def find_result(self) -> ISAModelResult:
+        precision = self.precision()
+        return ISAModelResult(self.architecture_id, precision)

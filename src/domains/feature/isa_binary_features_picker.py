@@ -7,8 +7,9 @@ from domains.label.labels import Labels
 
 
 class ISABinaryFeaturesPicker:
-    def __init__(self, binary_file_feature_computer: FeatureComputerCollection) -> None:
+    def __init__(self, binary_file_feature_computer: FeatureComputerCollection, target_label: str) -> None:
         self.binary_file_feature_computer = binary_file_feature_computer
+        self.target_label = target_label
 
     @staticmethod
     def isadetect_features_full_csv() -> ISABinaryFeatures:
@@ -20,9 +21,10 @@ class ISABinaryFeaturesPicker:
                                for label in Labels.get_corpus_exclusive())
         architecture_binary_files_dict = dict((architecture_text, [path]) for path in glob(
             f"{CPU_REC_DATASET_PATH}/*.corpus") if (labels := labels_dict_tmp.get(path.split("/")[-1])) is not None and (architecture_text := labels["architecture_text"]))
-        return ISABinaryFeatures.load_or_create(
+        return ISABinaryFeatures.load_or_create_from_binary_files(
             architecture_binary_files_dict,
-            self.binary_file_feature_computer
+            self.binary_file_feature_computer,
+            self.target_label
         )
 
     def isadetect_features_code_binaries(self, file_index_end: int = -1, identifier="isadetect_code_binaries") -> ISABinaryFeatures:
@@ -51,7 +53,9 @@ class ISABinaryFeaturesPicker:
     def isadetect_features_full_binaries(self, file_index_end: int = -1) -> ISABinaryFeatures:
         architecture_binary_files_dict = dict((arch_dir.split("/")[-1], glob(f"{arch_dir}/*")[:file_index_end])
                                               for arch_dir in glob(f"{ISA_DETECT_DATASET_PATH}/new_new_dataset/binaries/*"))
-        return ISABinaryFeatures.load_or_create(architecture_binary_files_dict, self.binary_file_feature_computer)
+        return ISABinaryFeatures.load_or_create_from_binary_files(architecture_binary_files_dict,
+                                                                  self.binary_file_feature_computer,
+                                                                  self.target_label)
 
     def binary_file_with_custom_labels(self, identifier: str, filename: str, labels: dict[str, object]) -> ISABinaryFeatures:
         architecture_text = labels.get(

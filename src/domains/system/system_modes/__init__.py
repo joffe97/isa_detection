@@ -1,3 +1,3 @@
 from .system_mode import SystemMode
-from .test_model import TestModel
-from .train import Train
+from .isa_detect_train_and_cpu_rec_test import ISADetectTrainAndCpuRecTest
+from .isa_detect_train_and_test import ISADetectTrainAndTest

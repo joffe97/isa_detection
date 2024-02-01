@@ -2,6 +2,8 @@ import statistics
 import xxhash
 import sklearn
 
+from domains.model.info.isa_model_result_collection import ISAModelResultCollection
+
 from .isa_model import ISAModel
 from domains.feature.isa_binary_features import ISABinaryFeatures
 
@@ -15,21 +17,21 @@ class ISAModelCollection:
     def with_isa_binary_features(self, isa_binary_features: ISABinaryFeatures, clone_classifier=True) -> "ISAModelCollection":
         identifier = f"{isa_binary_features.identifier}_{xxhash.xxh32(str(self.classifier)).hexdigest()}"
 
-        data = isa_binary_features.dataframe.iloc[:,
-                                                  0:isa_binary_features.feature_count]
-        targets = isa_binary_features.dataframe["endianness"]
-        architecture_ids = isa_binary_features.dataframe["architecture"]
-        architecture_texts = isa_binary_features.dataframe["architecture_text"]
-        architecture_id_targets = set(architecture_ids)
+        data = isa_binary_features.data
+        targets = isa_binary_features.target
+        architecture_ids = isa_binary_features.architecture_ids
+        architecture_texts = isa_binary_features.architecture_texts
+        architecture_id_text_targets = set(
+            zip(architecture_ids, architecture_texts))
         # architecture_id_targets = {2, 3, 6, 7}
 
         isa_models = dict()
-        for architecture_id in architecture_id_targets:
+        for architecture_id, architecture_text in architecture_id_text_targets:
             test_indexes = [i for i, architecture_id_target in enumerate(
                 architecture_ids) if architecture_id == architecture_id_target]
             classifier = sklearn.base.clone(
                 self.classifier) if clone_classifier else self.classifier
-            isa_models[architecture_id] = ISAModel(architecture_id, f"{identifier}_{architecture_id}", classifier=classifier, architecture_text=architecture_texts.iloc[test_indexes[0]]).with_train_test_split_on_indexes(
+            isa_models[architecture_id] = ISAModel(architecture_id, f"{identifier}_{architecture_text}", classifier=classifier, architecture_text=architecture_texts.iloc[test_indexes[0]]).with_train_test_split_on_indexes(
                 data, targets, set(test_indexes))
 
         self.isa_models = isa_models
@@ -40,12 +42,14 @@ class ISAModelCollection:
         for isa_model in self.isa_models.values():
             isa_model.train()
 
-    def mean_precision(self) -> float:
-        precisions = [
+    def precisions(self) -> list[float]:
+        return [
             isa_model.precision() for isa_model in self.isa_models.values()]
-        return statistics.fmean(precisions)
 
-    def print_precisions(self):
+    def mean_precision(self) -> float:
+        return statistics.fmean(self.precisions())
+
+    def print_endianness_precisions(self):
         precisions: dict[int, float] = dict()
         precisions_little = []
         precisions_big = []
@@ -75,3 +79,7 @@ class ISAModelCollection:
         print()
         print(
             f"Mean Precision:\t\t{statistics.fmean(precisions.values()):.4f}")
+
+    def find_results(self) -> ISAModelResultCollection:
+        return ISAModelResultCollection([isa_model.find_result()
+                                         for isa_model in self.isa_models.values()])

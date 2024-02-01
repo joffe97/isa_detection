@@ -13,10 +13,34 @@ from .feature_computer_collection import FeatureComputerCollection
 
 
 class ISABinaryFeatures:
-    def __init__(self, identifier: str, dataframe: DataFrame, feature_count: int) -> None:
+    def __init__(self, identifier: str, dataframe: DataFrame, target_label: str, feature_count: int) -> None:
         self.identifier = identifier
         self.dataframe = dataframe
+        self.target_label = target_label
         self.feature_count = feature_count
+
+        if self.target_label not in self.dataframe.columns:
+            raise KeyError(
+                f"target_label does not exist in dataframe: f{self.target_label}")
+
+    @property
+    def data(self) -> DataFrame:
+        return self.dataframe.iloc[:, 0:self.feature_count]
+
+    @property
+    def target(self) -> Series:
+        return self.get_column(self.target_label)
+
+    @property
+    def architecture_ids(self) -> Series:
+        return self.get_column("architecture")
+
+    @property
+    def architecture_texts(self) -> Series:
+        return self.get_column("architecture_text")
+
+    def get_column(self, column_name: str) -> Series:
+        return self.dataframe[column_name]
 
     def pretty_print(self) -> str:
         print("Identifier:")
@@ -32,13 +56,13 @@ class ISABinaryFeatures:
         return pathlib.Path.joinpath(
             CACHE_PATH, f"dumped_classifiers/{self.identifier}.pkl")
 
-    def _add_labels_to_dataframe(self, labels: list[dict]) -> DataFrame:
+    def _add_labels_to_data(self, labels: list[dict]) -> DataFrame:
         def create_column(column_name: str):
-            column_repeated_gen = (np.repeat(column_label, len(self.dataframe[self.dataframe['architecture'] == i+1])) for i, column_label in enumerate(
+            column_repeated_gen = (np.repeat(column_label, len(self.dataframe[self.architecture_ids == i+1])) for i, column_label in enumerate(
                 list(map(lambda label: label[column_name], labels))))
             return [
                 column for column_repeated in column_repeated_gen for column in column_repeated]
-            # return [labels[architecture_id][column_name] for architecture_id in self.dataframe["architecture"]]
+            # return [labels[architecture_id][column_name] for architecture_id in self.data["architecture"]]
 
         # Create wordsize column
         wordsize_column = create_column("wordsize")
@@ -105,13 +129,13 @@ class ISABinaryFeatures:
         df_full = df_full.drop(columns=unwanted_columns)
 
         isa_binary_features = ISABinaryFeatures(identifier, df_full, 256 + 4)
-        isa_binary_features._add_labels_to_dataframe(
+        isa_binary_features._add_labels_to_data(
             Labels.get_isa_detect_csv_labels())
 
         return isa_binary_features
 
     @classmethod
-    def load_or_create(cls, achitecture_binary_files_dict: dict[str, list[str]], feature_computer_collection: FeatureComputerCollection, *, labels_dict: Optional[dict[str, list[str]]] = None) -> "ISABinaryFeatures":
+    def load_or_create_from_binary_files(cls, achitecture_binary_files_dict: dict[str, list[str]], feature_computer_collection: FeatureComputerCollection, target_label: str, *, labels_dict: Optional[dict[str, list[str]]] = None) -> "ISABinaryFeatures":
         for binary_files in achitecture_binary_files_dict.values():
             binary_files.sort()
 
@@ -120,13 +144,15 @@ class ISABinaryFeatures:
         binary_file_feature_computer_str = feature_computer_collection.get_feature_computer_str()
         labels_json = json.dumps(labels_dict)
         parameter_hash = xxhash.xxh32(",".join([achitecture_binary_files_json,
-                                                binary_file_feature_computer_str, labels_json])).hexdigest()
+                                                binary_file_feature_computer_str,
+                                                target_label,
+                                                labels_json])).hexdigest()
         isa_binary_feature_path = CACHE_PATH.joinpath(
             "isa_binary_features", parameter_hash)
 
         if not isa_binary_feature_path.exists():
             isa_binary_features = cls.from_binary_files(
-                parameter_hash, achitecture_binary_files_dict, feature_computer_collection, labels_dict=labels_dict)
+                parameter_hash, achitecture_binary_files_dict, feature_computer_collection, target_label, labels_dict=labels_dict)
             if not isa_binary_feature_path.parent.exists():
                 isa_binary_feature_path.parent.mkdir()
             with open(isa_binary_feature_path, "wb") as fid:
@@ -139,7 +165,7 @@ class ISABinaryFeatures:
             return isa_binary_features
 
     @staticmethod
-    def from_binary_files(identifier: str, achitecture_binary_files_dict: dict[str, list[str]], feature_computer_collection: FeatureComputerCollection, *, labels_dict: Optional[dict[str, list[str]]] = None) -> "ISABinaryFeatures":
+    def from_binary_files(identifier: str, achitecture_binary_files_dict: dict[str, list[str]], feature_computer_collection: FeatureComputerCollection, target_label: str, *, labels_dict: Optional[dict[str, list[str]]] = None) -> "ISABinaryFeatures":
         if labels_dict is None:
             labels_dict = dict((label["architecture_text"], label)
                                for label in Labels.get_labels_combined())
@@ -178,7 +204,7 @@ class ISABinaryFeatures:
         features_count = max(features_counts)
 
         features_dataframe = pandas.DataFrame.from_records(features)
-        return ISABinaryFeatures(identifier, features_dataframe, features_count)
+        return ISABinaryFeatures(identifier, features_dataframe, target_label, features_count)
 
     def with_n_most_common_column_group(self, n: int, column_group: str) -> "ISABinaryFeatures":
         data_mean_column_groups = self.dataframe.filter(

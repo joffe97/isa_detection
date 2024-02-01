@@ -9,7 +9,7 @@ from config import CACHE_PATH
 def pickle_func(func):
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
-        func_name = func.__name__
+        func_name = func.__qualname__
 
         args_hash = xxhash.xxh32_hexdigest(
             '|'.join([*args, json.dumps(kwargs, sort_keys=True)]))

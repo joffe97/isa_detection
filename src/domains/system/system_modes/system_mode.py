@@ -1,10 +1,16 @@
-from abc import ABC, abstractmethod
-from sklearn.base import ClassifierMixin
+from typing import Type
 
-from domains.feature.feature_computer_collection import FeatureComputerCollection
+from domains.model.info.isa_model_result_collection import ISAModelResultCollection
+from domains.model.isa_model_configuration import ISAModelConfiguration
+from domains.system.system_modes.test_modes.test_mode import TestMode
+from domains.system.system_modes.train_modes.train_mode import TrainMode
 
 
-class SystemMode(ABC):
-    @abstractmethod
-    def run(self, feature_computer_collection: FeatureComputerCollection, classifier: ClassifierMixin, files_per_architecture: int):
-        pass
+class SystemMode():
+    def __init__(self, train_mode: Type[TrainMode], test_mode: Type[TestMode]) -> None:
+        self.train_mode = train_mode
+        self.test_mode = test_mode
+
+    def run(self, isa_model_configuration: ISAModelConfiguration) -> ISAModelResultCollection:
+        isa_model_collection = self.train_mode.run(isa_model_configuration)
+        return self.test_mode.run(isa_model_configuration, isa_model_collection)
