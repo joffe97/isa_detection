@@ -2,12 +2,13 @@ from typing import Optional
 from pandas import DataFrame, Series
 import pathlib
 import sklearn
-import pickle
 import numpy as np
 from sklearn.base import ClassifierMixin
+import logging
 
-from config import CACHE_PATH
+from config import Config
 from domains.model.info.isa_model_result import ISAModelResult
+from helpers import pickle_function_data
 
 
 class ISAModel:
@@ -51,13 +52,13 @@ class ISAModel:
     def __get_cache_file_path(self, data_dir: str) -> Optional[pathlib.Path]:
         if self.identifier is None:
             return None
-        return CACHE_PATH.joinpath(data_dir, self.identifier)
+        return Config.CACHE_PATH.joinpath(data_dir, self.identifier)
 
     def __classifier_file_path(self) -> Optional[pathlib.Path]:
         return self.__get_cache_file_path("classifiers")
 
     def __precision_file_path(self) -> Optional[pathlib.Path]:
-        return self.__get_cache_file_path("precision")
+        return self.__get_cache_file_path("precisions")
 
     def train(self) -> None:
         try:
@@ -66,19 +67,12 @@ class ISAModel:
         except sklearn.exceptions.NotFittedError:
             pass
 
-        model_file_path = self.__classifier_file_path()
-        if model_file_path is not None and model_file_path.exists():
-            with open(model_file_path, "rb") as fid:
-                self.classifier = pickle.load(fid)
-                return
+        def fit_and_return_classifier():
+            self.classifier.fit(self.X_train, self.Y_train)
+            return self.classifier
 
-        self.classifier.fit(self.X_train, self.Y_train)
-
-        if model_file_path is not None:
-            if not model_file_path.parent.exists():
-                model_file_path.parent.mkdir()
-            with open(model_file_path, "wb") as fid:
-                pickle.dump(self.classifier, fid)
+        self.classifier = pickle_function_data(self.__classifier_file_path(),
+                                               fit_and_return_classifier)
 
     def prediction(self) -> np.ndarray:
         if self.__prediction is None:
@@ -87,20 +81,16 @@ class ISAModel:
         return self.__prediction
 
     def precision(self) -> float:
-        precision_file_path = self.__precision_file_path()
-        if precision_file_path is not None and precision_file_path.exists():
-            with open(precision_file_path, "rb") as fid:
-                return pickle.load(fid)
+        def calculate_precision():
+            correctness = [Y == prediction for Y, prediction in zip(
+                self.Y_test.to_list(), self.prediction().tolist())]
+            return correctness.count(True) / len(correctness)
 
-        correctness = [Y == prediction for Y, prediction in zip(
-            self.Y_test.to_list(), self.prediction().tolist())]
-        precision = correctness.count(True) / len(correctness)
+        precision = pickle_function_data(
+            self.__precision_file_path(), calculate_precision)
 
-        if precision_file_path is not None:
-            if not precision_file_path.parent.exists():
-                precision_file_path.parent.mkdir()
-            with open(precision_file_path, "wb") as fid:
-                pickle.dump(precision, fid)
+        logging.info(
+            f"Found precision for ISAModel with identifier: {self.identifier}")
 
         return precision
 

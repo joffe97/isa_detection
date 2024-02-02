@@ -11,7 +11,7 @@ class System():
         self.system_mode = system_mode
         self.isa_model_configurations = isa_model_configurations
 
-    def get_isa_model_info_collection(self) -> ISAModelInfoCollection:
+    def run(self) -> ISAModelInfoCollection:
         isa_model_info_list = []
         for isa_model_configuration in self.isa_model_configurations:
             result_collection = self.system_mode.run(isa_model_configuration)
@@ -23,8 +23,8 @@ class System():
         isa_model_info_collection.print()
         return isa_model_info_collection
 
-    def run(self) -> DataFrame:
-        isa_model_info_collection = self.get_isa_model_info_collection()
+    def run_and_visualize(self) -> DataFrame:
+        isa_model_info_collection = self.run()
 
         precision_classifier_dict = dict()
         features = []

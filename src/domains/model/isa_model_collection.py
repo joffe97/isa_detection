@@ -10,12 +10,18 @@ from domains.feature.isa_binary_features import ISABinaryFeatures
 
 class ISAModelCollection:
     def __init__(self, classifier: object, isa_models: dict[int, ISAModel] = None, identifier: str = None) -> None:
-        self.identifier = identifier
-        self.isa_models = isa_models
         self.classifier = classifier
+        self.isa_models = isa_models
+        self.identifier = identifier
+
+    def __get_classifier_identifier(self) -> str:
+        classifier_name = self.classifier.__class__.__name__
+        classifier_dict_hash = xxhash.xxh32(
+            str(self.classifier.__dict__)).hexdigest()
+        return f"{classifier_name}_{classifier_dict_hash}"
 
     def with_isa_binary_features(self, isa_binary_features: ISABinaryFeatures, clone_classifier=True) -> "ISAModelCollection":
-        identifier = f"{isa_binary_features.identifier}_{xxhash.xxh32(str(self.classifier)).hexdigest()}"
+        identifier = f"{isa_binary_features.identifier}/{self.__get_classifier_identifier()}"
 
         data = isa_binary_features.data
         targets = isa_binary_features.target
@@ -23,7 +29,6 @@ class ISAModelCollection:
         architecture_texts = isa_binary_features.architecture_texts
         architecture_id_text_targets = set(
             zip(architecture_ids, architecture_texts))
-        # architecture_id_targets = {2, 3, 6, 7}
 
         isa_models = dict()
         for architecture_id, architecture_text in architecture_id_text_targets:
@@ -31,7 +36,7 @@ class ISAModelCollection:
                 architecture_ids) if architecture_id == architecture_id_target]
             classifier = sklearn.base.clone(
                 self.classifier) if clone_classifier else self.classifier
-            isa_models[architecture_id] = ISAModel(architecture_id, f"{identifier}_{architecture_text}", classifier=classifier, architecture_text=architecture_texts.iloc[test_indexes[0]]).with_train_test_split_on_indexes(
+            isa_models[architecture_id] = ISAModel(architecture_id, f"{identifier}/{architecture_text}", classifier=classifier, architecture_text=architecture_texts.iloc[test_indexes[0]]).with_train_test_split_on_indexes(
                 data, targets, set(test_indexes))
 
         self.isa_models = isa_models

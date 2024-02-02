@@ -11,8 +11,8 @@ class FeatureComputerCollection:
         method_names.sort()
         return method_names
 
-    def get_feature_computer_str(self) -> str:
-        return ",".join(self.get_feature_computer_strs())
+    def get_feature_computer_str(self, seperator=",") -> str:
+        return seperator.join(self.get_feature_computer_strs())
 
     def compute(self, binary_file: str, *, additional_labels: dict[str, object] = dict()) -> tuple[dict[str, object], int]:
         features_list = [feature_computer.compute(

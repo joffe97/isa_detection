@@ -1,14 +1,13 @@
 from pandas import DataFrame, Series
 import pandas
 import numpy as np
-import pathlib
 import json
-import pickle
 from typing import Optional
 import xxhash
 
-from config import CACHE_PATH
+from config import Config
 from domains.label.labels import Labels
+from helpers import pickle_function_data
 from .feature_computer_collection import FeatureComputerCollection
 
 
@@ -51,10 +50,6 @@ class ISABinaryFeatures:
         print()
         print("Dataframe:")
         # ipython_display(self.dataframe)
-
-    def get_classifier_path(self):
-        return pathlib.Path.joinpath(
-            CACHE_PATH, f"dumped_classifiers/{self.identifier}.pkl")
 
     def _add_labels_to_data(self, labels: list[dict]) -> DataFrame:
         def create_column(column_name: str):
@@ -135,48 +130,58 @@ class ISABinaryFeatures:
         return isa_binary_features
 
     @classmethod
-    def load_or_create_from_binary_files(cls, achitecture_binary_files_dict: dict[str, list[str]], feature_computer_collection: FeatureComputerCollection, target_label: str, *, labels_dict: Optional[dict[str, list[str]]] = None) -> "ISABinaryFeatures":
-        for binary_files in achitecture_binary_files_dict.values():
+    def load_or_create_from_binary_files(cls, architecture_binary_files_dict: dict[str, list[str]], feature_computer_collection: FeatureComputerCollection, target_label: str) -> "ISABinaryFeatures":
+        for binary_files in architecture_binary_files_dict.values():
             binary_files.sort()
+        architecture_binary_files_len = len(architecture_binary_files_dict)
+        architecture_binary_files_json = json.dumps(
+            architecture_binary_files_dict, sort_keys=True)
+        architecture_binary_files_hash = xxhash.xxh32(
+            architecture_binary_files_json).hexdigest()
+        architecture_binary_files_identifier = f"{architecture_binary_files_len}_{architecture_binary_files_hash}"
 
-        achitecture_binary_files_json = json.dumps(
-            achitecture_binary_files_dict, sort_keys=True)
-        binary_file_feature_computer_str = feature_computer_collection.get_feature_computer_str()
-        labels_json = json.dumps(labels_dict)
-        parameter_hash = xxhash.xxh32(",".join([achitecture_binary_files_json,
-                                                binary_file_feature_computer_str,
-                                                target_label,
-                                                labels_json])).hexdigest()
-        isa_binary_feature_path = CACHE_PATH.joinpath(
-            "isa_binary_features", parameter_hash)
+        binary_file_feature_computer_str = feature_computer_collection.get_feature_computer_str(
+            seperator="_")
 
-        if not isa_binary_feature_path.exists():
-            isa_binary_features = cls.from_binary_files(
-                parameter_hash, achitecture_binary_files_dict, feature_computer_collection, target_label, labels_dict=labels_dict)
-            if not isa_binary_feature_path.parent.exists():
-                isa_binary_feature_path.parent.mkdir()
-            with open(isa_binary_feature_path, "wb") as fid:
-                pickle.dump(isa_binary_features, fid)
-            return isa_binary_features
+        identifier = "/".join([target_label,
+                               binary_file_feature_computer_str,
+                               architecture_binary_files_hash])
+        isa_binary_feature_path = Config.CACHE_PATH.joinpath(
+            "isa_binary_features", identifier)
 
-        with open(isa_binary_feature_path, "rb") as fid:
-            isa_binary_features = pickle.load(fid)
-            isa_binary_features.identifier = parameter_hash
-            return isa_binary_features
+        return pickle_function_data(
+            isa_binary_feature_path,
+            lambda: cls.from_binary_files(
+                identifier, architecture_binary_files_dict, feature_computer_collection, target_label)
+        )
+
+        # if not isa_binary_feature_path.exists():
+        #     isa_binary_features = cls.from_binary_files(
+        #         identifier, architecture_binary_files_dict, feature_computer_collection, target_label)
+        #     os.makedirs(isa_binary_feature_path.parent, exist_ok=True)
+        #     with open(isa_binary_feature_path, "wb") as fid:
+        #         pickle.dump(isa_binary_features, fid)
+        #     return isa_binary_features
+
+        # with open(isa_binary_feature_path, "rb") as fid:
+        #     isa_binary_features = pickle.load(fid)
+        #     return isa_binary_features
+
+        # # isa_binary_features.identifier = identifier
 
     @staticmethod
-    def from_binary_files(identifier: str, achitecture_binary_files_dict: dict[str, list[str]], feature_computer_collection: FeatureComputerCollection, target_label: str, *, labels_dict: Optional[dict[str, list[str]]] = None) -> "ISABinaryFeatures":
+    def from_binary_files(identifier: str, architecture_binary_files_dict: dict[str, list[str]], feature_computer_collection: FeatureComputerCollection, target_label: str, *, labels_dict: Optional[dict[str, list[str]]] = None) -> "ISABinaryFeatures":
         if labels_dict is None:
             labels_dict = dict((label["architecture_text"], label)
                                for label in Labels.get_labels_combined())
 
-        achitecture_binary_files_dict_items = sorted(
-            achitecture_binary_files_dict.items(), key=lambda item: item[0])
+        architecture_binary_files_dict_items = sorted(
+            architecture_binary_files_dict.items(), key=lambda item: item[0])
 
         binaryfile_labels_list: list[tuple[str, dict[str, object]]] = []
         include_labels = set()
         architecture_count = 0
-        for architecture_text, binary_files in achitecture_binary_files_dict_items:
+        for architecture_text, binary_files in architecture_binary_files_dict_items:
             labels = labels_dict.get(architecture_text).copy()
             if labels is None:
                 continue

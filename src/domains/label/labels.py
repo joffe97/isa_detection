@@ -2,7 +2,7 @@ from typing import Callable
 import csv
 from random import randint
 
-from config import CORPUS_CLASSIFICATION_PATH
+from config import Config
 
 
 class Labels:
@@ -41,7 +41,7 @@ class Labels:
     @classmethod
     def __create_corpus_labels(cls) -> list[dict[str, object]]:
         corpus_labels = []
-        with open(CORPUS_CLASSIFICATION_PATH) as csv_file:
+        with open(Config.CORPUS_CLASSIFICATION_PATH) as csv_file:
             columns_to_read = 6
             head_translation_dict = {"Common name": "architecture_text",
                                      "Instruction Size": "instruction_size"}

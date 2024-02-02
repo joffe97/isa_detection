@@ -1,6 +1,6 @@
 from glob import glob
 
-from config import ISA_DETECT_DATASET_PATH, CPU_REC_DATASET_PATH
+from config import Config
 from .isa_binary_features import ISABinaryFeatures
 from .feature_computer_collection import FeatureComputerCollection
 from domains.label.labels import Labels
@@ -14,13 +14,13 @@ class ISABinaryFeaturesPicker:
     @staticmethod
     def isadetect_features_full_csv() -> ISABinaryFeatures:
         return ISABinaryFeatures.load_from_isadetect_features_csv(
-            f"{ISA_DETECT_DATASET_PATH}/new_new_dataset/ISAdetect_full_binaries_features.csv")
+            f"{Config.ISA_DETECT_DATASET_PATH}/new_new_dataset/ISAdetect_full_binaries_features.csv")
 
     def cpu_rec_corpus_features(self) -> "ISABinaryFeatures":
         labels_dict_tmp = dict((label["isa"], label)
                                for label in Labels.get_corpus_exclusive())
         architecture_binary_files_dict = dict((architecture_text, [path]) for path in glob(
-            f"{CPU_REC_DATASET_PATH}/*.corpus") if (labels := labels_dict_tmp.get(path.split("/")[-1])) is not None and (architecture_text := labels["architecture_text"]))
+            f"{Config.CPU_REC_DATASET_PATH}/*.corpus") if (labels := labels_dict_tmp.get(path.split("/")[-1])) is not None and (architecture_text := labels["architecture_text"]))
         return ISABinaryFeatures.load_or_create_from_binary_files(
             architecture_binary_files_dict,
             self.binary_file_feature_computer,
@@ -29,8 +29,8 @@ class ISABinaryFeaturesPicker:
 
     def isadetect_features_code_binaries(self, file_index_end: int = -1, identifier="isadetect_code_binaries") -> ISABinaryFeatures:
         code_files = glob(
-            f"{ISA_DETECT_DATASET_PATH}/new_new_dataset/binaries_code_sections_only/*")
-        architecture_binary_files_list = list((glob(f"{ISA_DETECT_DATASET_PATH}/new_new_dataset/binaries/*/{code_file.split('/')[-1].split('.')[0]}")[0].split("/")[-2], code_file)
+            f"{Config.ISA_DETECT_DATASET_PATH}/new_new_dataset/binaries_code_sections_only/*")
+        architecture_binary_files_list = list((glob(f"{Config.ISA_DETECT_DATASET_PATH}/new_new_dataset/binaries/*/{code_file.split('/')[-1].split('.')[0]}")[0].split("/")[-2], code_file)
                                               for code_file in code_files)
 
         architecture_binary_files_dict = dict()
@@ -52,7 +52,7 @@ class ISABinaryFeaturesPicker:
 
     def isadetect_features_full_binaries(self, file_index_end: int = -1) -> ISABinaryFeatures:
         architecture_binary_files_dict = dict((arch_dir.split("/")[-1], glob(f"{arch_dir}/*")[:file_index_end])
-                                              for arch_dir in glob(f"{ISA_DETECT_DATASET_PATH}/new_new_dataset/binaries/*"))
+                                              for arch_dir in glob(f"{Config.ISA_DETECT_DATASET_PATH}/new_new_dataset/binaries/*"))
         return ISABinaryFeatures.load_or_create_from_binary_files(architecture_binary_files_dict,
                                                                   self.binary_file_feature_computer,
                                                                   self.target_label)
