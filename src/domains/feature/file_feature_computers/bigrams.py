@@ -1,11 +1,12 @@
 import numpy as np
 
-from .feature_computer import FeatureComputer
-from helpers import pickle_func
+from domains.caching import cache_func
+from .file_feature_computer import FileFeatureComputer
 
 
-class Bigrams(FeatureComputer):
-    @pickle_func
+class Bigrams(FileFeatureComputer):
+    @staticmethod
+    @cache_func()
     def compute(binary_file: str) -> dict[str, float]:
         bigram_counts = np.zeros(int("0xffff", 16) + 1, dtype=np.uint64)
         bigram_count = 0

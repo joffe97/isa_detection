@@ -7,8 +7,8 @@ from sklearn.base import ClassifierMixin
 import logging
 
 from config import Config
+from domains.caching.caching import Caching
 from domains.model.info.isa_model_result import ISAModelResult
-from helpers import pickle_function_data
 
 
 class ISAModel:
@@ -60,6 +60,11 @@ class ISAModel:
     def __precision_file_path(self) -> Optional[pathlib.Path]:
         return self.__get_cache_file_path("precisions")
 
+    def get_labels(self) -> set[str]:
+        labels = set(self.X_train.columns)
+        labels.add(self.Y_train.name)
+        return labels
+
     def train(self) -> None:
         try:
             sklearn.utils.validation.check_is_fitted(self.classifier)
@@ -71,8 +76,8 @@ class ISAModel:
             self.classifier.fit(self.X_train, self.Y_train)
             return self.classifier
 
-        self.classifier = pickle_function_data(self.__classifier_file_path(),
-                                               fit_and_return_classifier)
+        self.classifier = Caching().load_or_process_func_data(self.__classifier_file_path(),
+                                                              fit_and_return_classifier)
 
     def prediction(self) -> np.ndarray:
         if self.__prediction is None:
@@ -86,7 +91,7 @@ class ISAModel:
                 self.Y_test.to_list(), self.prediction().tolist())]
             return correctness.count(True) / len(correctness)
 
-        precision = pickle_function_data(
+        precision = Caching().load_or_process_func_data(
             self.__precision_file_path(), calculate_precision)
 
         logging.info(

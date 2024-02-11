@@ -1,11 +1,12 @@
 import numpy as np
 
-from .feature_computer import FeatureComputer
-from helpers import pickle_func
+from .file_feature_computer import FileFeatureComputer
+from domains.caching import cache_func
 
 
-class EndiannessSignatures(FeatureComputer):
-    @pickle_func
+class EndiannessSignatures(FileFeatureComputer):
+    @staticmethod
+    @cache_func()
     def compute(binary_file: str) -> dict[str, float]:
         endianness_signature_names = [
             # "be_one", "be_stack", "le_one", "le_stack"]

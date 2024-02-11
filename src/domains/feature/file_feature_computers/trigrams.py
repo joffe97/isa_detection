@@ -1,12 +1,12 @@
 import numpy as np
 
-from .feature_computer import FeatureComputer
-from helpers import pickle_func
+from domains.caching import cache_func
+from .file_feature_computer import FileFeatureComputer
 
 
-class Trigrams(FeatureComputer):
-    @pickle_func
-    def compute(binary_file: str) -> dict[str, float]:
+class Trigrams(FileFeatureComputer):
+    @staticmethod
+    def compute_without_cache(binary_file: str) -> dict[str, float]:
         trigram_counts = np.zeros(int("0xffffff", 16) + 1, dtype=np.uint32)
         trigram_count = 0
         with open(binary_file, "rb") as f:
@@ -23,3 +23,8 @@ class Trigrams(FeatureComputer):
         trigrams_f64 = trigram_counts.astype(np.float64)
         trigrams_f64 /= trigram_count
         return dict((f"trigram_0x{hex(i)[2:].zfill(6)}", trigram) for i, trigram in enumerate(trigrams_f64))
+
+    @staticmethod
+    @cache_func()
+    def compute(binary_file: str) -> dict[str, float]:
+        return Trigrams.compute_without_cache(binary_file)

@@ -9,7 +9,7 @@ from domains.feature.isa_binary_features import ISABinaryFeatures
 
 
 class ISAModelCollection:
-    def __init__(self, classifier: object, isa_models: dict[int, ISAModel] = None, identifier: str = None) -> None:
+    def __init__(self, classifier: sklearn.base.ClassifierMixin, isa_models: dict[int, ISAModel] = None, identifier: str = None) -> None:
         self.classifier = classifier
         self.isa_models = isa_models
         self.identifier = identifier

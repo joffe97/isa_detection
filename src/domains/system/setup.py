@@ -12,8 +12,8 @@ class Setup():
         parser = argparse.ArgumentParser()
         parser.add_argument('-log',
                             '--loglevel',
-                            default='warning',
-                            help='Provide logging level. Example --loglevel debug. (default: warning)')
+                            default='info',
+                            help='Provide logging level. Example --loglevel debug. (default: info)')
         parser.add_argument('--cache',
                             default=True,
                             action=argparse.BooleanOptionalAction,
@@ -30,6 +30,6 @@ class Setup():
             Config._disable_cache()
         return self
 
-    def with_all(self):
+    def with_all_config(self):
         self.with_cache_config() \
             .with_logging_config()

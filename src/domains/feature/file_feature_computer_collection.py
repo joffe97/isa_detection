@@ -1,13 +1,13 @@
-from .feature_computers import FeatureComputer
+from .file_feature_computers import FileFeatureComputer
 
 
-class FeatureComputerCollection:
-    def __init__(self, feature_computers: list[FeatureComputer]) -> None:
-        self.feature_computers = feature_computers
+class FileFeatureComputerCollection:
+    def __init__(self, file_feature_computers: list[FileFeatureComputer]) -> None:
+        self.file_feature_computers = file_feature_computers
 
     def get_feature_computer_strs(self) -> list[str]:
         method_names = [
-            feature_computer.__name__ for feature_computer in self.feature_computers]
+            feature_computer.__name__ for feature_computer in self.file_feature_computers]
         method_names.sort()
         return method_names
 
@@ -16,7 +16,7 @@ class FeatureComputerCollection:
 
     def compute(self, binary_file: str, *, additional_labels: dict[str, object] = dict()) -> tuple[dict[str, object], int]:
         features_list = [feature_computer.compute(
-            binary_file) for feature_computer in self.feature_computers]
+            binary_file) for feature_computer in self.file_feature_computers]
 
         training_features_length = sum(
             [len(features_part) for features_part in features_list])

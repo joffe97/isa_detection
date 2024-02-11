@@ -63,7 +63,7 @@ class Labels:
                         else:
                             items = None
                             break
-                    if (column_name == "wordsize"):
+                    if (column_name in ["wordsize", "instruction_size"]):
                         if not isinstance(item, int):
                             items = None
                             break

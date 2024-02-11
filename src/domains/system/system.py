@@ -30,7 +30,7 @@ class System():
         features = []
         for isa_model_info in isa_model_info_collection.collection:
             features_str = " + ".join(
-                isa_model_info.configuration.feature_computer_collection.get_feature_computer_strs())
+                isa_model_info.configuration.feature_computer_container_collection.identifiers())
             classifier_str = str(isa_model_info.configuration.classifier)
             files_per_architecture = isa_model_info.configuration.files_per_architecture
             target_label = isa_model_info.configuration.target_label

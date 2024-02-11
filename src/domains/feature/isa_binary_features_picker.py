@@ -1,14 +1,14 @@
 from glob import glob
 
 from config import Config
+from domains.feature.feature_computer_container import FeatureComputerContainer
 from .isa_binary_features import ISABinaryFeatures
-from .feature_computer_collection import FeatureComputerCollection
 from domains.label.labels import Labels
 
 
 class ISABinaryFeaturesPicker:
-    def __init__(self, binary_file_feature_computer: FeatureComputerCollection, target_label: str) -> None:
-        self.binary_file_feature_computer = binary_file_feature_computer
+    def __init__(self, feature_computer_container_collection: FeatureComputerContainer, target_label: str) -> None:
+        self.feature_computer_container_collection = feature_computer_container_collection
         self.target_label = target_label
 
     @staticmethod
@@ -23,7 +23,7 @@ class ISABinaryFeaturesPicker:
             f"{Config.CPU_REC_DATASET_PATH}/*.corpus") if (labels := labels_dict_tmp.get(path.split("/")[-1])) is not None and (architecture_text := labels["architecture_text"]))
         return ISABinaryFeatures.load_or_create_from_binary_files(
             architecture_binary_files_dict,
-            self.binary_file_feature_computer,
+            self.feature_computer_container_collection,
             self.target_label
         )
 
@@ -48,13 +48,13 @@ class ISABinaryFeaturesPicker:
                 architecture_binary_files_dict[arch].append(file)
 
         return ISABinaryFeatures.from_binary_files(
-            identifier, architecture_binary_files_dict, self.binary_file_feature_computer)
+            identifier, architecture_binary_files_dict, self.feature_computer_container_collection)
 
     def isadetect_features_full_binaries(self, file_index_end: int = -1) -> ISABinaryFeatures:
         architecture_binary_files_dict = dict((arch_dir.split("/")[-1], glob(f"{arch_dir}/*")[:file_index_end])
                                               for arch_dir in glob(f"{Config.ISA_DETECT_DATASET_PATH}/new_new_dataset/binaries/*"))
         return ISABinaryFeatures.load_or_create_from_binary_files(architecture_binary_files_dict,
-                                                                  self.binary_file_feature_computer,
+                                                                  self.feature_computer_container_collection,
                                                                   self.target_label)
 
     def binary_file_with_custom_labels(self, identifier: str, filename: str, labels: dict[str, object]) -> ISABinaryFeatures:
@@ -67,7 +67,7 @@ class ISABinaryFeaturesPicker:
             "architecture_text": architecture_text,
             **labels
         }}
-        return ISABinaryFeatures.from_binary_files(identifier, architecture_binary_files_dict, self.binary_file_feature_computer, labels_dict=labels_dict)
+        return ISABinaryFeatures.from_binary_files(identifier, architecture_binary_files_dict, self.feature_computer_container_collection, labels_dict=labels_dict)
 
     def cpu_rec_file(self, identifier: str, filename: str) -> ISABinaryFeatures:
         isa = filename.split("/")[-1]
@@ -83,4 +83,4 @@ class ISABinaryFeaturesPicker:
         architecture_binary_files_dict = {
             architecture_text: [filename]
         }
-        return ISABinaryFeatures.from_binary_files(identifier, architecture_binary_files_dict, self.binary_file_feature_computer)
+        return ISABinaryFeatures.from_binary_files(identifier, architecture_binary_files_dict, self.feature_computer_container_collection)

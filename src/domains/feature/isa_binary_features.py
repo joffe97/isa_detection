@@ -6,9 +6,10 @@ from typing import Optional
 import xxhash
 
 from config import Config
+from domains.caching import Caching
+from domains.feature.feature_computer_container_collection import FeatureComputerContainerCollection
+from domains.feature.file_feature_computer_collection import FileFeatureComputer
 from domains.label.labels import Labels
-from helpers import pickle_function_data
-from .feature_computer_collection import FeatureComputerCollection
 
 
 class ISABinaryFeatures:
@@ -130,7 +131,7 @@ class ISABinaryFeatures:
         return isa_binary_features
 
     @classmethod
-    def load_or_create_from_binary_files(cls, architecture_binary_files_dict: dict[str, list[str]], feature_computer_collection: FeatureComputerCollection, target_label: str) -> "ISABinaryFeatures":
+    def load_or_create_from_binary_files(cls, architecture_binary_files_dict: dict[str, list[str]], feature_computer_container_collection: FeatureComputerContainerCollection, target_label: str) -> "ISABinaryFeatures":
         for binary_files in architecture_binary_files_dict.values():
             binary_files.sort()
         architecture_binary_files_len = len(architecture_binary_files_dict)
@@ -140,8 +141,7 @@ class ISABinaryFeatures:
             architecture_binary_files_json).hexdigest()
         architecture_binary_files_identifier = f"{architecture_binary_files_len}_{architecture_binary_files_hash}"
 
-        binary_file_feature_computer_str = feature_computer_collection.get_feature_computer_str(
-            seperator="_")
+        binary_file_feature_computer_str = feature_computer_container_collection.identifier()
 
         identifier = "/".join([target_label,
                                binary_file_feature_computer_str,
@@ -149,66 +149,20 @@ class ISABinaryFeatures:
         isa_binary_feature_path = Config.CACHE_PATH.joinpath(
             "isa_binary_features", identifier)
 
-        return pickle_function_data(
+        architecture_labels_mapping = dict((label["architecture_text"], label)
+                                           for label in Labels.get_labels_combined())
+
+        return Caching().load_or_process_func_data(
             isa_binary_feature_path,
             lambda: cls.from_binary_files(
-                identifier, architecture_binary_files_dict, feature_computer_collection, target_label)
+                identifier, architecture_binary_files_dict, feature_computer_container_collection, target_label, architecture_labels_mapping),
         )
 
-        # if not isa_binary_feature_path.exists():
-        #     isa_binary_features = cls.from_binary_files(
-        #         identifier, architecture_binary_files_dict, feature_computer_collection, target_label)
-        #     os.makedirs(isa_binary_feature_path.parent, exist_ok=True)
-        #     with open(isa_binary_feature_path, "wb") as fid:
-        #         pickle.dump(isa_binary_features, fid)
-        #     return isa_binary_features
-
-        # with open(isa_binary_feature_path, "rb") as fid:
-        #     isa_binary_features = pickle.load(fid)
-        #     return isa_binary_features
-
-        # # isa_binary_features.identifier = identifier
-
     @staticmethod
-    def from_binary_files(identifier: str, architecture_binary_files_dict: dict[str, list[str]], feature_computer_collection: FeatureComputerCollection, target_label: str, *, labels_dict: Optional[dict[str, list[str]]] = None) -> "ISABinaryFeatures":
-        if labels_dict is None:
-            labels_dict = dict((label["architecture_text"], label)
-                               for label in Labels.get_labels_combined())
+    def from_binary_files(identifier: str, architecture_binary_files_dict: dict[str, list[str]], feature_computer_container_collection: FeatureComputerContainerCollection, target_label: str, architecture_labels_mapping: dict[str, list[str]]) -> "ISABinaryFeatures":
+        features_dataframe, features_count = feature_computer_container_collection.compute_for_binary_files(
+            architecture_binary_files_dict, architecture_labels_mapping)
 
-        architecture_binary_files_dict_items = sorted(
-            architecture_binary_files_dict.items(), key=lambda item: item[0])
-
-        binaryfile_labels_list: list[tuple[str, dict[str, object]]] = []
-        include_labels = set()
-        architecture_count = 0
-        for architecture_text, binary_files in architecture_binary_files_dict_items:
-            labels = labels_dict.get(architecture_text).copy()
-            if labels is None:
-                continue
-
-            architecture_count += 1
-            labels["architecture"] = architecture_count
-
-            if len(include_labels) == 0:
-                include_labels = set(labels)
-
-            for include_label in list(include_labels):
-                if include_label not in labels:
-                    include_labels.remove(include_label)
-                    for _, other_labels in binaryfile_labels_list:
-                        other_labels.pop(include_label, None)
-                for label in list(labels.keys()):
-                    if label not in include_labels:
-                        labels.pop(label, None)
-
-            for binary_file in binary_files:
-                binaryfile_labels_list.append((binary_file, labels))
-
-        features, features_counts = tuple(zip(*(feature_computer_collection.compute(
-            binary_file, additional_labels=labels) for binary_file, labels in binaryfile_labels_list)))
-        features_count = max(features_counts)
-
-        features_dataframe = pandas.DataFrame.from_records(features)
         return ISABinaryFeatures(identifier, features_dataframe, target_label, features_count)
 
     def with_n_most_common_column_group(self, n: int, column_group: str) -> "ISABinaryFeatures":
