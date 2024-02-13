@@ -6,7 +6,9 @@ from domains.feature.feature_computer_container import FeatureComputerContainer
 
 class FeatureComputerContainerCollection:
     def __init__(self, feature_computer_containers: list[FeatureComputerContainer]) -> None:
-        self.feature_computer_containers = feature_computer_containers
+        self.feature_computer_containers = sorted(
+            feature_computer_containers, key=lambda container: container.identifier()
+        )
 
     def identifiers(self) -> list[str]:
         return [

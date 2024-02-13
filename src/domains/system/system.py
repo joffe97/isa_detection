@@ -6,8 +6,10 @@ from domains.model.isa_model_configuration import ISAModelConfiguration
 from domains.system.system_modes import SystemMode
 
 
-class System():
-    def __init__(self, system_mode: SystemMode, isa_model_configurations: list[ISAModelConfiguration]) -> None:
+class System:
+    def __init__(
+        self, system_mode: SystemMode, isa_model_configurations: list[ISAModelConfiguration]
+    ) -> None:
         self.system_mode = system_mode
         self.isa_model_configurations = isa_model_configurations
 
@@ -15,10 +17,9 @@ class System():
         isa_model_info_list = []
         for isa_model_configuration in self.isa_model_configurations:
             result_collection = self.system_mode.run(isa_model_configuration)
-            isa_model_info = ISAModelInfo(
-                isa_model_configuration, result_collection)
-
+            isa_model_info = ISAModelInfo(isa_model_configuration, result_collection)
             isa_model_info_list.append(isa_model_info)
+
         isa_model_info_collection = ISAModelInfoCollection(isa_model_info_list)
         isa_model_info_collection.print()
         return isa_model_info_collection
@@ -30,7 +31,8 @@ class System():
         features = []
         for isa_model_info in isa_model_info_collection.collection:
             features_str = " + ".join(
-                isa_model_info.configuration.feature_computer_container_collection.identifiers())
+                isa_model_info.configuration.feature_computer_container_collection.identifiers()
+            )
             classifier_str = str(isa_model_info.configuration.classifier)
             files_per_architecture = isa_model_info.configuration.files_per_architecture
             target_label = isa_model_info.configuration.target_label

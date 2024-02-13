@@ -72,9 +72,8 @@ class ISAModel:
     def __precision_file_path(self) -> pathlib.Path:
         return self.__get_cache_file_path("precisions")
 
-    def get_labels(self) -> set[str]:
-        labels = set(self.x_train.columns)
-        labels.add(str(self.y_train.name))
+    def get_labels(self) -> list[str]:
+        labels = list(self.x_train.columns)
         return labels
 
     def train(self) -> None:

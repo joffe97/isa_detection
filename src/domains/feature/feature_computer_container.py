@@ -17,7 +17,7 @@ class FeatureComputerContainer:
     def identifier(self) -> str:
         feature_computers_str = self.file_feature_computer.__name__
         features_post_computer_str = (
-            self.features_post_computer.__class__.__name__
+            self.features_post_computer.identifier()
             if not isinstance(self.features_post_computer, NoPostComputing)
             else None
         )

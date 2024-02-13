@@ -28,10 +28,10 @@ from domains.feature.file_feature_computers import (
 
 if __name__ == "__main__":
     Setup().with_all_config()
-    system_mode = SystemMode(ISADetectTrain, CpuRecTest)
+    system_mode = SystemMode(ISADetectTrain, SimpleTest)
 
     feature_computer_container_params: list[list] = [
-        [(TrigramsNonZero, MostCommon(100))],
+        [(TrigramsNonZero, MostCommon(1000))],
         # [ByteFrequencyDistribution],
         # [Bigrams],
         # [EndiannessSignatures],

@@ -9,10 +9,7 @@ class FileFeatureComputerCollection:
         self.file_feature_computers = file_feature_computers
 
     def get_feature_computer_strs(self) -> list[str]:
-        method_names = [
-            feature_computer.__name__
-            for feature_computer in self.file_feature_computers
-        ]
+        method_names = [feature_computer.__name__ for feature_computer in self.file_feature_computers]
         method_names.sort()
         return method_names
 
@@ -20,21 +17,15 @@ class FileFeatureComputerCollection:
         return seperator.join(self.get_feature_computer_strs())
 
     def compute(
-        self,
-        binary_file: str,
-        *,
-        additional_labels: Optional[dict[str, FeatureEntry]] = None
+        self, binary_file: str, *, additional_labels: Optional[dict[str, FeatureEntry]] = None
     ) -> tuple[dict[str, FeatureEntry], int]:
         if additional_labels is None:
             additional_labels = dict()
         features_list = [
-            feature_computer.compute(binary_file)
-            for feature_computer in self.file_feature_computers
+            feature_computer.compute(binary_file) for feature_computer in self.file_feature_computers
         ]
 
-        training_features_length = sum(
-            [len(features_part) for features_part in features_list]
-        )
+        training_features_length = sum(len(features_part) for features_part in features_list)
 
         features_list.append(additional_labels)
 
