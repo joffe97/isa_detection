@@ -9,11 +9,10 @@ class Config:
 
     ISA_DETECT_DATASET_PATH = DATASETS_PATH.joinpath("isa-detect-data")
     CPU_REC_DATASET_PATH = DATASETS_PATH.joinpath("cpu_rec_corpus")
-    CORPUS_CLASSIFICATION_PATH = DATASETS_PATH.joinpath(
-        "corpus_classification_isa.csv")
+    CORPUS_CLASSIFICATION_PATH = DATASETS_PATH.joinpath("corpus_classification_isa.csv")
 
     CACHE_DISABLED = False
 
     @classmethod
-    def _disable_cache(cls):
+    def disable_cache(cls):
         cls.CACHE_DISABLED = True

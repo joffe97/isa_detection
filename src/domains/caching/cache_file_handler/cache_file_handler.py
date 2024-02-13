@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from io import BufferedReader, BufferedWriter
+from typing import IO
 
 
 class CacheFileHandler(ABC):
@@ -8,12 +8,10 @@ class CacheFileHandler(ABC):
         self.read_mode = read_mode
         self.write_mode = write_mode
 
-    @staticmethod
     @abstractmethod
-    def dump(data: object, writer: BufferedWriter) -> None:
+    def dump(self, data: object, writer: IO) -> None:
         pass
 
-    @staticmethod
     @abstractmethod
-    def load(reader: BufferedReader) -> object:
+    def load(self, reader: IO) -> object:
         pass

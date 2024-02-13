@@ -1,13 +1,14 @@
 import numpy as np
 
 from domains.caching import cache_func
+from domains.feature.feature_entry import FeatureEntry
 from .file_feature_computer import FileFeatureComputer
 
 
 class Bigrams(FileFeatureComputer):
     @staticmethod
     @cache_func()
-    def compute(binary_file: str) -> dict[str, float]:
+    def compute(binary_file: str) -> dict[str, FeatureEntry]:
         bigram_counts = np.zeros(int("0xffff", 16) + 1, dtype=np.uint64)
         bigram_count = 0
         with open(binary_file, "rb") as f:
@@ -20,4 +21,4 @@ class Bigrams(FileFeatureComputer):
                 previous_byte = current_byte
         bigrams_f64 = bigram_counts.astype(np.float64)
         bigrams_f64 /= bigram_count
-        return dict((f"bigram_0x{(hex(i)[2:]).zfill(4)}", bigram) for i, bigram in enumerate(bigrams_f64))
+        return dict((f"bigram_0x{(hex(i)[2:]).zfill(4)}", FeatureEntry(bigram, i)) for i, bigram in enumerate(bigrams_f64))

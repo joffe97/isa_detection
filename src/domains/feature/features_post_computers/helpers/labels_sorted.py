@@ -1,10 +1,14 @@
 from collections import deque
 from typing import Optional, Iterable
 
-features = [{'trigram_non_zero_0x00000c': 0.00013152455751381007, 'trigram_non_zero_0x00000d': 0.00016910300251775582},
-            {'trigram_non_zero_0x00000c': 0.00016880705353780628,
-                'trigram_non_zero_0x00000e': 5.194063185778655e-05},
-            {'trigram_non_zero_0x00000d': 0.00016880705353780628, 'trigram_non_zero_0x00000e': 5.194063185778655e-05}]
+features = [
+    {
+        "trigram_non_zero_0x00000c": 0.00013152455751381007,
+        "trigram_non_zero_0x00000d": 0.00016910300251775582,
+    },
+    {"trigram_non_zero_0x00000c": 0.00016880705353780628, "trigram_non_zero_0x00000e": 5.194063185778655e-05},
+    {"trigram_non_zero_0x00000d": 0.00016880705353780628, "trigram_non_zero_0x00000e": 5.194063185778655e-05},
+]
 
 
 class Node:
@@ -79,7 +83,7 @@ class KeyedLinkedList:
         return key in self.__key_node_dict
 
     def __getitem__(self, key: str) -> Node:
-        return self.get_node(key)
+        return self.__key_node_dict[key]
 
 
 class _KeyedLinkedListIter:
@@ -96,19 +100,25 @@ class _KeyedLinkedListIter:
 
 
 def labels_sorted(features: list[dict[str, float]], included_labels: set[str]) -> list[str]:
-    features_included_labels = [list(filter(
-        lambda key: key in included_labels, feature.keys())) for feature in features]
+    features_included_labels = [
+        list(filter(lambda key: key in included_labels, feature.keys())) for feature in features
+    ]
 
     features_included_labels_iter = iter(features_included_labels)
     keyed_linked_list = KeyedLinkedList(next(features_included_labels_iter))
 
-    for item in keyed_linked_list:
-        print(item.data)
-
+    # Labels not found. No info to determine the position of these labels. They must be inserted any place.
+    labels_not_found = set()
     for label_list in features_included_labels_iter:
-        pass
+        prev_label = None
+        for label in label_list:
+            cur_prev_label = prev_label
+            prev_label = label
+            if label in keyed_linked_list:
+                continue
 
 
 if __name__ == "__main__":
-    labels_sorted(features, {"trigram_non_zero_0x00000c",
-                  "trigram_non_zero_0x00000d", "trigram_non_zero_0x00000e"})
+    labels_sorted(
+        features, {"trigram_non_zero_0x00000c", "trigram_non_zero_0x00000d", "trigram_non_zero_0x00000e"}
+    )

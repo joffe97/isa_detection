@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from typing import Callable
+from typing import Any, Callable
 import time
 
 from config import Config
@@ -8,12 +8,19 @@ from domains.caching.cache_file_handler import CacheFileHandler, PickleCacheFile
 
 
 class Caching:
-    def __init__(self, cache_file_handler: CacheFileHandler = PickleCacheFileHandler()) -> None:
+    def __init__(
+        self, cache_file_handler: CacheFileHandler = PickleCacheFileHandler()
+    ) -> None:
         self.cache_file_handler = cache_file_handler
 
-    def load_or_process_func_data(self, data_path: Path, func: Callable[[], object], *, cache_disabled=Config.CACHE_DISABLED) -> object:
-        logging.debug(
-            f"Started cache function for file: {data_path.absolute()}")
+    def load_or_process_func_data(
+        self,
+        data_path: Path,
+        func: Callable[[], Any],
+        *,
+        cache_disabled=Config.CACHE_DISABLED,
+    ) -> Any:
+        logging.debug(f"Started cache function for file: {data_path.absolute()}")
         if cache_disabled:
             data = func()
             logging.info(f"Ignored cache for file: {data_path.absolute()}")
@@ -37,6 +44,5 @@ class Caching:
 
             data = self.cache_file_handler.load(fid)
             logging.info(f"Loaded data from file: {data_path.absolute()}")
-            logging.debug(
-                f"Loaded data from file in {time.time() - start_time} sek")
+            logging.debug(f"Loaded data from file in {time.time() - start_time} sek")
             return data
