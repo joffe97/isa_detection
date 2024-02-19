@@ -10,3 +10,6 @@ class NoPostComputing(FeaturesPostComputer):
             dict((key, feature_entry.value) for key, feature_entry in features_dict.items())
             for features_dict in features
         ]
+
+    def identifier(self) -> str:
+        return ""

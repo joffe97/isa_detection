@@ -12,7 +12,7 @@ class FeaturesPostComputer(ABC):
     def compute(self, features: list[dict[str, FeatureEntry]]) -> list[dict[str, float]]:
         pass
 
-    def identifier(self):
+    def identifier(self) -> str:
         class_name = self.__class__.__name__
         attributes = self.__dict__
 

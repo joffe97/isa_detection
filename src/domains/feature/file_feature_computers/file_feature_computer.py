@@ -8,3 +8,7 @@ class FileFeatureComputer(ABC):
     @abstractmethod
     def compute(binary_file: str) -> dict[str, FeatureEntry]:
         pass
+
+    @classmethod
+    def identifier(cls) -> str:
+        return cls.__name__

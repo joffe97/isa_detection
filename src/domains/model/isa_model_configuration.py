@@ -8,6 +8,7 @@ from domains.feature.feature_computer_container_collection import (
 from domains.feature.features_post_computers import (
     FeaturesPostComputer,
 )
+from domains.label.label_entry import LabelEntry
 
 
 class ISAModelConfiguration:
@@ -16,7 +17,7 @@ class ISAModelConfiguration:
         feature_computer_container_collection: FeatureComputerContainerCollection,
         classifier: BaseEstimator,
         files_per_architecture: int,
-        target_label: str,
+        target_label: LabelEntry,
     ) -> None:
         self.feature_computer_container_collection = feature_computer_container_collection
         self.classifier = classifier
@@ -28,7 +29,7 @@ class ISAModelConfiguration:
         feature_computer_container_collections: list[FeatureComputerContainerCollection],
         classifiers: list[BaseEstimator],
         files_per_architecture_list: list[int],
-        target_labels: list[str],
+        target_labels: list[LabelEntry],
     ) -> list["ISAModelConfiguration"]:
         return [
             ISAModelConfiguration(

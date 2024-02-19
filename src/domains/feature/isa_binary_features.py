@@ -7,7 +7,8 @@ from domains.caching import Caching
 from domains.feature.feature_computer_container_collection import (
     FeatureComputerContainerCollection,
 )
-from domains.label.labels import Labels
+from domains.label.label_entry import LabelEntry
+from domains.label.label_loaders.corpus_labels import CorpusLabels
 
 
 class ISABinaryFeatures:
@@ -15,7 +16,7 @@ class ISABinaryFeatures:
         self,
         identifier: str,
         dataframe: DataFrame,
-        target_label: str,
+        target_label: LabelEntry,
         feature_count: int,
     ) -> None:
         self.identifier = identifier
@@ -23,10 +24,8 @@ class ISABinaryFeatures:
         self.target_label = target_label
         self.feature_count = feature_count
 
-        if self.target_label not in self.dataframe.columns:
-            raise KeyError(
-                f"target_label does not exist in dataframe: f{self.target_label}"
-            )
+        if self.target_label.value not in self.dataframe.columns:
+            raise KeyError(f"target_label does not exist in dataframe: {self.target_label.value}")
 
     @property
     def data(self) -> DataFrame:
@@ -34,7 +33,7 @@ class ISABinaryFeatures:
 
     @property
     def target(self) -> Series:
-        return self.get_column(self.target_label)
+        return self.get_column(self.target_label.value)
 
     @property
     def architecture_ids(self) -> Series:
@@ -153,36 +152,23 @@ class ISABinaryFeatures:
         cls,
         architecture_binary_files_dict: dict[str, list[str]],
         feature_computer_container_collection: FeatureComputerContainerCollection,
-        target_label: str,
+        target_label: LabelEntry,
     ) -> "ISABinaryFeatures":
         for binary_files in architecture_binary_files_dict.values():
             binary_files.sort()
-        architecture_binary_files_json = json.dumps(
-            architecture_binary_files_dict, sort_keys=True
-        )
-        architecture_binary_files_hash = xxhash.xxh32(
-            architecture_binary_files_json
-        ).hexdigest()
+        architecture_binary_files_json = json.dumps(architecture_binary_files_dict, sort_keys=True)
+        architecture_binary_files_hash = xxhash.xxh32(architecture_binary_files_json).hexdigest()
 
-        binary_file_feature_computer_str = (
-            feature_computer_container_collection.identifier()
-        )
+        binary_file_feature_computer_str = feature_computer_container_collection.identifier()
 
         identifier = "/".join(
             [
-                target_label,
+                target_label.value,
                 binary_file_feature_computer_str,
                 architecture_binary_files_hash,
             ]
         )
-        isa_binary_feature_path = Config.CACHE_PATH.joinpath(
-            "isa_binary_features", identifier
-        )
-
-        architecture_labels_mapping: dict[str, dict[str, object]] = dict(
-            (label["architecture_text"], label)
-            for label in Labels.get_labels_combined()
-        )  # type: ignore
+        isa_binary_feature_path = Config.CACHE_PATH.joinpath("isa_binary_features", identifier)
 
         return Caching().load_or_process_func_data(
             isa_binary_feature_path,
@@ -191,7 +177,6 @@ class ISABinaryFeatures:
                 architecture_binary_files_dict,
                 feature_computer_container_collection,
                 target_label,
-                architecture_labels_mapping,
             ),
         )
 
@@ -200,18 +185,14 @@ class ISABinaryFeatures:
         identifier: str,
         architecture_binary_files_dict: dict[str, list[str]],
         feature_computer_container_collection: FeatureComputerContainerCollection,
-        target_label: str,
-        architecture_labels_mapping: dict[str, dict[str, object]],
+        target_label: LabelEntry,
     ) -> "ISABinaryFeatures":
-        features_dataframe, features_count = (
-            feature_computer_container_collection.compute_for_binary_files(
-                architecture_binary_files_dict, architecture_labels_mapping
-            )
+        label_loader = CorpusLabels.with_default_included_labels({target_label})
+        features_dataframe, features_count = feature_computer_container_collection.compute_for_binary_files(
+            architecture_binary_files_dict, label_loader
         )
 
-        return ISABinaryFeatures(
-            identifier, features_dataframe, target_label, features_count
-        )
+        return ISABinaryFeatures(identifier, features_dataframe, target_label, features_count)
 
     # def with_n_most_common_column_group(
     #     self, n: int, column_group: str

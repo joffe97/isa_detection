@@ -12,6 +12,7 @@ from domains.feature.feature_computer_container_collection import (
 from domains.feature.features_post_computers import FeaturesPostComputer, MostCommon
 
 from domains.feature.file_feature_computer_collection import FileFeatureComputer
+from domains.label.label_entry import LabelEntry
 from domains.model.isa_model_configuration import ISAModelConfiguration
 from domains.system.setup import Setup
 from domains.system.system_modes import SystemMode
@@ -33,7 +34,7 @@ if __name__ == "__main__":
     feature_computer_container_params: list[list] = [
         [(TrigramsNonZero, MostCommon(1000))],
         # [ByteFrequencyDistribution],
-        # [Bigrams],
+        [Bigrams],
         # [EndiannessSignatures],
         # [EndiannessSignatures, ByteFrequencyDistribution]
     ]
@@ -67,8 +68,7 @@ if __name__ == "__main__":
         # MLPClassifier(max_iter=10_000, random_state=random_state),
     ]
     files_per_architecture_list = [10]
-    target_labels = ["wordsize"]
-
+    target_labels = [LabelEntry.WORD_SIZE]
     isa_model_configuration = ISAModelConfiguration.create_every_combination(
         feature_computer_container_collections,
         classifiers,

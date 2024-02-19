@@ -1,4 +1,3 @@
-from domains.caching.cache_func_decorator import cache_func
 from domains.feature.feature_entry import FeatureEntry
 from domains.feature.features_post_computers import FeaturesPostComputer
 
@@ -7,7 +6,6 @@ class MostCommon(FeaturesPostComputer):
     def __init__(self, n: int) -> None:
         self.n = n
 
-    @cache_func()
     def compute(self, features: list[dict[str, FeatureEntry]]) -> list[dict[str, float]]:
         first_features = next(iter(features), None)
         if first_features is None:

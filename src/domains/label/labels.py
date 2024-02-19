@@ -25,9 +25,7 @@ class Labels:
 
     @classmethod
     def get_isa_detect_csv_labels(cls) -> list[dict[str, object]]:
-        return cls.__get_label_or_create_if_not_exist(
-            cls.__create_isa_detect_csv_labels
-        )
+        return cls.__get_label_or_create_if_not_exist(cls.__create_isa_detect_csv_labels)
 
     @classmethod
     def get_labels_combined(cls) -> list[dict[str, object]]:
@@ -38,10 +36,7 @@ class Labels:
         corpus_labels = cls.get_corpus_labels()
         isa_detect_labels = cls.get_isa_detect_csv_labels()
         isa_detect_architecture_texts = {
-            *[
-                isa_detect_label["architecture_text"]
-                for isa_detect_label in isa_detect_labels
-            ],
+            *[isa_detect_label["architecture_text"] for isa_detect_label in isa_detect_labels],
             "s-390",
         }
         return [
@@ -92,15 +87,9 @@ class Labels:
                     if column_name == "architecture_text":
                         if item == "":
                             isa = next(
-                                item_tmp
-                                for i_tmp, item_tmp in enumerate(item_strs)
-                                if head[i_tmp] == "isa"
+                                item_tmp for i_tmp, item_tmp in enumerate(item_strs) if head[i_tmp] == "isa"
                             )
-                            item = (
-                                isa
-                                if isa
-                                else f"unknown_{str(randint(1, 999_999)).zfill(6)}"
-                            )
+                            item = isa if isa else f"unknown_{str(randint(1, 999_999)).zfill(6)}"
                     items.append(item)
                 if not invalid_items:
                     corpus_labels.append(dict(zip(head, items)))

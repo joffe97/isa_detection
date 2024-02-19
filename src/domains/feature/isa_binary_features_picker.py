@@ -2,13 +2,16 @@ from glob import glob
 
 from config import Config
 from domains.feature.feature_computer_container_collection import FeatureComputerContainerCollection
+from domains.label.label_entry import LabelEntry
 from domains.label.labels import Labels
 from .isa_binary_features import ISABinaryFeatures
 
 
 class ISABinaryFeaturesPicker:
     def __init__(
-        self, feature_computer_container_collection: FeatureComputerContainerCollection, target_label: str
+        self,
+        feature_computer_container_collection: FeatureComputerContainerCollection,
+        target_label: LabelEntry,
     ) -> None:
         self.feature_computer_container_collection = feature_computer_container_collection
         self.target_label = target_label
