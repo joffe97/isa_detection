@@ -8,5 +8,4 @@ class ISAModelInfo:
         self.results = results
 
     def print(self):
-        print(
-            f"{self.configuration}\nPrecision: {self.results.mean_precision():.4f}\n")
+        print(f"{self.configuration}\nPrecision: {self.results.mean_precision():.4f}\n")

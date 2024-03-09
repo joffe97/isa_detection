@@ -1,3 +1,4 @@
+from domains.dataset.cpu_rec import CpuRec
 from domains.feature.features_post_computers import KeepSpecified
 from domains.feature.isa_binary_features_picker import ISABinaryFeaturesPicker
 from domains.model.info.isa_model_result_collection import ISAModelResultCollection
@@ -22,7 +23,7 @@ class CpuRecTest(TestMode):
         cpu_rec_features = ISABinaryFeaturesPicker(
             isa_model_configuration.feature_computer_container_collection,
             isa_model_configuration.target_label,
-        ).cpu_rec_corpus_features()
+        ).binary_file_dataset_features(CpuRec())
         cpu_rec_model_collection = ISAModelCollection(classifier_fitted).with_isa_binary_features(
             cpu_rec_features, clone_classifier=False
         )

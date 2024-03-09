@@ -18,6 +18,8 @@ def cache_func(
         def inner_wrapper(*args, **kwargs):
             func_name = func.__qualname__
             first_arg_is_self = func.__code__.co_argcount != 0 and func.__code__.co_varnames[0] == "self"
+            identifier_strs = []
+            args_strs = list(map(str, args))
 
             if use_class_identifier_method:
                 if not first_arg_is_self:
@@ -31,15 +33,17 @@ def cache_func(
                     raise ValueError(
                         f"cache_func cannot use identifier method if the method does not exist: {func_name}"
                     )
-                identifier = identifier_method()
+                identifier_strs.append(identifier_method())
             else:
-                args_strs = list(map(str, args))
                 if first_arg_is_self:
                     func_self = args[0]
                     args_strs[0] = json.dumps(func_self.__dict__, sort_keys=True)
-                identifier = xxhash.xxh32_hexdigest(
-                    "|".join([*args_strs, json.dumps(kwargs, sort_keys=True)])
-                )
+
+            identifier_strs.append(
+                xxhash.xxh32_hexdigest("|".join([*args_strs, json.dumps(kwargs, sort_keys=True)]))
+            )
+
+            identifier = "/".join(identifier_strs)
 
             file_path = Config.CACHE_PATH.joinpath("functions", func_name, identifier)
 

@@ -1,7 +1,8 @@
 import sklearn
 from sklearn.base import (
-    BaseEstimator,
+    ClassifierMixin,
 )
+import xxhash
 from domains.feature.feature_computer_container_collection import (
     FeatureComputerContainerCollection,
 )
@@ -15,7 +16,7 @@ class ISAModelConfiguration:
     def __init__(
         self,
         feature_computer_container_collection: FeatureComputerContainerCollection,
-        classifier: BaseEstimator,
+        classifier: ClassifierMixin,
         files_per_architecture: int,
         target_label: LabelEntry,
     ) -> None:
@@ -27,14 +28,14 @@ class ISAModelConfiguration:
     @staticmethod
     def create_every_combination(
         feature_computer_container_collections: list[FeatureComputerContainerCollection],
-        classifiers: list[BaseEstimator],
+        classifiers: list[ClassifierMixin],
         files_per_architecture_list: list[int],
         target_labels: list[LabelEntry],
     ) -> list["ISAModelConfiguration"]:
         return [
             ISAModelConfiguration(
                 feature_computer_container_collection,
-                sklearn.base.clone(classifier),
+                sklearn.base.clone(classifier),  # type: ignore
                 files_per_architecture,
                 target_label,
             )
@@ -52,6 +53,25 @@ class ISAModelConfiguration:
             feature_computer_container
         ) in self.feature_computer_container_collection.feature_computer_containers:
             feature_computer_container.features_post_computer = new_features_post_computer
+
+    def get_classifier_identifier(self) -> str:
+        classifier_str = str(self.classifier)
+        args = self.classifier.__dict__
+
+        args_str = classifier_str.split("(", maxsplit=1)[1][:-1]
+        args_hash = xxhash.xxh32(args_str).hexdigest()
+
+        classname = self.classifier.__class__.__name__
+
+        identifier_arg_names = ["kernel", "n_neighbors"]
+        identifier_arg_optional = next(
+            filter(None, (args.get(arg_name, None) for arg_name in identifier_arg_names)), None
+        )
+
+        return "_".join(list(map(str, filter(None, [classname, identifier_arg_optional, args_hash]))))
+
+    def identifier(self) -> str:
+        return f"{self.target_label}/{self.get_classifier_identifier()}/{self.feature_computer_container_collection.identifier()}/{self.files_per_architecture}"
 
     def __str__(
         self,

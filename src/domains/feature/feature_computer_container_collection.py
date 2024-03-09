@@ -1,5 +1,6 @@
 import logging
 from pandas import DataFrame
+from domains.caching.cache_func_decorator import cache_func
 
 from domains.feature.feature_computer_container import FeatureComputerContainer
 from domains.label.label_entry import LabelEntry
@@ -22,6 +23,7 @@ class FeatureComputerContainerCollection:
     def identifier(self, seperator="_") -> str:
         return seperator.join(self.identifiers())
 
+    # @cache_func(use_class_identifier_method=True)
     def compute_for_binary_files(  # TODO: Refactor this method
         self, architecture_binary_files_dict: dict[str, list[str]], label_loader: LabelLoader
     ) -> tuple[DataFrame, int]:

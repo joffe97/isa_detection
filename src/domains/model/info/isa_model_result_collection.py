@@ -1,4 +1,5 @@
 import statistics
+import math
 from typing import Any, Callable
 from domains.model.info.isa_model_result import ISAModelResult
 
@@ -15,9 +16,24 @@ class ISAModelResultCollection:
         return collection_copy
 
     def mean_precision(self) -> float:
-        return statistics.fmean(result.precision for result in self.collection)
+        return statistics.fmean(result.precision() for result in self.collection)
+
+    def variance(self) -> float:
+        mean_precison = self.mean_precision()
+        return sum((result.precision() - mean_precison) ** 2 for result in self.collection) / len(
+            self.collection
+        )
+
+    def standard_deviation(self) -> float:
+        return math.sqrt(self.variance())
+
+    def get_outputs_set(self) -> set[object]:
+        return set().union(*(result.get_outputs_set() for result in self.collection))
 
     def print_results(self):
         for result in self.collection:
             result.print()
         print()
+
+    def base_line(self) -> float:
+        return 1 / len(self.get_outputs_set())

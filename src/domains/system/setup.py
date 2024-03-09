@@ -22,12 +22,17 @@ class Setup:
             action=argparse.BooleanOptionalAction,
             help="Provide option to disable caching.",
         )
+        parser.add_argument(
+            "-rs",
+            "--result-savers",
+            default=False,
+            action=argparse.BooleanOptionalAction,
+            help="Provide option to activate result savers.",
+        )
         return parser.parse_args()
 
     def with_logging_config(self) -> "Setup":
-        logging.basicConfig(
-            format="%(levelname)s:\t%(message)s", level=self.args.loglevel.upper()
-        )
+        logging.basicConfig(format="%(levelname)s:\t%(message)s", level=self.args.loglevel.upper())
         return self
 
     def with_cache_config(self) -> "Setup":
@@ -35,5 +40,10 @@ class Setup:
             Config.disable_cache()
         return self
 
+    def with_result_savers_config(self) -> "Setup":
+        if self.args.result_savers:
+            Config.activate_result_savers()
+        return self
+
     def with_all_config(self):
-        self.with_cache_config().with_logging_config()
+        self.with_cache_config().with_logging_config().with_result_savers_config()
