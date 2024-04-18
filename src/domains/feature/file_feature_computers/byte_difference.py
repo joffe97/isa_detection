@@ -56,9 +56,8 @@ class ByteDifference(FileFeatureComputer):
                         byte_difference_factorized_dict[dict_key].value += byte_difference_frequency
         return byte_difference_factorized_dict
 
-    @classmethod
     @cache_func()
-    def compute(cls, binary_file: str) -> dict[str, FeatureEntry]:
-        byte_difference_lists = cls.create_byte_difference_lists(binary_file)
-        byte_difference_frequency_lists = cls.create_byte_difference_frequency_lists(byte_difference_lists)
-        return cls.create_byte_difference_factorized_dict(byte_difference_frequency_lists)
+    def compute(self, binary_file: str) -> dict[str, FeatureEntry]:
+        byte_difference_lists = self.create_byte_difference_lists(binary_file)
+        byte_difference_frequency_lists = self.create_byte_difference_frequency_lists(byte_difference_lists)
+        return self.create_byte_difference_factorized_dict(byte_difference_frequency_lists)

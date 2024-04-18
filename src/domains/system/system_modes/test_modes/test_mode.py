@@ -6,9 +6,9 @@ from domains.model.isa_model_configuration import ISAModelConfiguration
 
 
 class TestMode(ABC):
-    @staticmethod
     @abstractmethod
     def run(
+        self,
         isa_model_configuration: ISAModelConfiguration,
         isa_model_collection: ISAModelCollection,
     ) -> ISAModelResultCollection:

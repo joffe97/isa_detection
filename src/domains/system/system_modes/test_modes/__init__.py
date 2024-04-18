@@ -1,3 +1,3 @@
 from .test_mode import TestMode
-from .cpu_rec_test import CpuRecTest
+from .dataset_test import DatasetTest
 from .simple_test import SimpleTest

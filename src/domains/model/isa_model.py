@@ -113,9 +113,8 @@ class ISAModel:
 
     def precision(self) -> float:
         def calculate_precision():
-            correctness = [
-                Y == prediction for Y, prediction in zip(self.y_test.to_list(), self.prediction().tolist())
-            ]
+            predictions = self.prediction().tolist()
+            correctness = [Y == prediction for Y, prediction in zip(self.y_test.to_list(), predictions)]
             return correctness.count(True) / len(correctness)
 
         precision = calculate_precision()

@@ -5,8 +5,8 @@ from domains.system.system_modes.test_modes.test_mode import TestMode
 
 
 class SimpleTest(TestMode):
-    @staticmethod
     def run(
+        self,
         isa_model_configuration: ISAModelConfiguration,
         isa_model_collection: ISAModelCollection,
     ) -> ISAModelResultCollection:

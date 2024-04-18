@@ -9,10 +9,12 @@ class Config:
     CACHE_PATH = DATA_PATH.joinpath("cache")
     DATASETS_PATH = DATA_PATH.joinpath("datasets")
     RESULTS_PATH = DATA_PATH.joinpath("results")
+    RESEARCH_PATH = DATA_PATH.joinpath("research")
 
     ISA_DETECT_DATASET_PATH = DATASETS_PATH.joinpath("isa-detect-data")
     CPU_REC_DATASET_PATH = DATASETS_PATH.joinpath("cpu_rec_corpus")
     CORPUS_CLASSIFICATION_PATH = DATASETS_PATH.joinpath("corpus_classification_isa.csv")
+    CUSTOM_DATASET_PATH = DATASETS_PATH.joinpath("custom")
 
     CACHE_DISABLED = False
     RUN_RESULT_SAVERS = False

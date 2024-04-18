@@ -21,9 +21,7 @@ class Trigrams(FileFeatureComputer):
                 ):
                     trigram_count += 1
                     trigram_int = (
-                        (ord(previous_bytes[1]) << 16)
-                        + (ord(previous_bytes[0]) << 8)
-                        + ord(current_byte)
+                        (ord(previous_bytes[1]) << 16) + (ord(previous_bytes[0]) << 8) + ord(current_byte)
                     )
                     trigram_counts[trigram_int] += 1
                 previous_bytes[1] = previous_bytes[0]
@@ -35,7 +33,6 @@ class Trigrams(FileFeatureComputer):
             for i, trigram in enumerate(trigrams_f64)
         )
 
-    @staticmethod
     @cache_func()
-    def compute(binary_file: str) -> dict[str, FeatureEntry]:
+    def compute(self, binary_file: str) -> dict[str, FeatureEntry]:
         return Trigrams.compute_without_cache(binary_file)

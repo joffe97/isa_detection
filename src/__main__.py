@@ -6,10 +6,12 @@ from sklearn.svm import SVC
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
+from domains.dataset import IsaDetectCode, CpuRec
 from domains.system.setup import Setup
 from domains.visualizer.result_savers.visualizer_saver import VisualizerSaver
 
 Setup().with_all_config()
+from config import Config
 
 from domains.feature.feature_computer_container import FeatureComputerContainer
 from domains.feature.feature_computer_container_collection import (
@@ -18,32 +20,44 @@ from domains.feature.feature_computer_container_collection import (
 from domains.feature.features_post_computers import FeaturesPostComputer, MostCommon
 
 from domains.feature.file_feature_computer_collection import FileFeatureComputer
-from domains.feature.file_feature_computers.byte_difference import ByteDifference
 from domains.label.label_entry import LabelEntry
 from domains.model.isa_model_configuration import ISAModelConfiguration
 from domains.system.system_modes import SystemMode
-from domains.system.system_modes.test_modes import SimpleTest, CpuRecTest
-from domains.system.system_modes.train_modes import ISADetectTrain
+from domains.system.system_modes.test_modes import SimpleTest, DatasetTest
+from domains.system.system_modes.train_modes import DatasetTrain
 from domains.system.system import System
 from domains.feature.file_feature_computers import (
     TrigramsNonZero,
     ByteFrequencyDistribution,
     Bigrams,
     EndiannessSignatures,
+    ByteDifference,
+    BigramDifference,
+    AutoCorrelation,
+    AutoCorrelationChunks,
+    AutoCorrelations,
 )
 from domains.visualizer.visualizers import Visualizer, ModelPrecision, BaseLine, StandardDeviations
 from domains.visualizer.result_savers import ResultSaver, ConfusionMatrix
 
 
 def run_system():
-    system_mode = SystemMode(ISADetectTrain, SimpleTest)
+    # system_mode = SystemMode(ISADetectTrain, SimpleTest)
+    # system_mode = SystemMode(DatasetTrain(CpuRec), SimpleTest())
+    system_mode = SystemMode(DatasetTrain(CpuRec), DatasetTest(IsaDetectCode(10)))
 
     feature_computer_container_params: list[list] = [
-        [ByteDifference, Bigrams],
-        [ByteDifference],
+        # [AutoCorrelationChunks(chunk_size=1024, chunk_count=1, lag=1)],
+        # [BigramDifference],
+        # [AutoCorrelation(8)],
+        # [AutoCorrelation(4)],
+        # [AutoCorrelation(), ByteFrequencyDistribution()],
+        [AutoCorrelations(list(range(1, 16 + 1)))]
+        # [ByteDifference, Bigrams],
+        # [ByteDifference],
         # [(TrigramsNonZero, MostCommon(1000))],
-        [ByteFrequencyDistribution],
-        [Bigrams],
+        # [ByteFrequencyDistribution],
+        # [Bigrams],
         # [EndiannessSignatures],
         # [EndiannessSignatures, ByteFrequencyDistribution]
     ]

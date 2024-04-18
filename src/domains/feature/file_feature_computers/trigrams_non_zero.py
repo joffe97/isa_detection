@@ -4,8 +4,11 @@ from . import FileFeatureComputer, Trigrams
 
 
 class TrigramsNonZero(FileFeatureComputer):
-    @staticmethod
     @cache_func()
-    def compute(binary_file: str) -> dict[str, FeatureEntry]:
+    def compute(self, binary_file: str) -> dict[str, FeatureEntry]:
         trigrams = Trigrams.compute_without_cache(binary_file)
-        return dict((f"trigram_non_zero{key.lstrip('trigram')}", feature_entry) for key, feature_entry in trigrams.items() if feature_entry.value != 0)
+        return dict(
+            (f"trigram_non_zero{key.lstrip('trigram')}", feature_entry)
+            for key, feature_entry in trigrams.items()
+            if feature_entry.value != 0
+        )

@@ -1,3 +1,4 @@
+from functools import cache
 from typing import Callable
 import csv
 from random import randint
@@ -20,20 +21,21 @@ class Labels:
         return label_value
 
     @classmethod
-    def get_corpus_labels(cls) -> list[dict[str, object]]:
-        return cls.__get_label_or_create_if_not_exist(cls.__create_corpus_labels)
+    def get_corpus_labels(cls, include_invalid=False) -> list[dict[str, object]]:
+        return cls.__create_corpus_labels(include_invalid)
 
     @classmethod
     def get_isa_detect_csv_labels(cls) -> list[dict[str, object]]:
         return cls.__get_label_or_create_if_not_exist(cls.__create_isa_detect_csv_labels)
 
     @classmethod
-    def get_labels_combined(cls) -> list[dict[str, object]]:
-        return cls.__get_label_or_create_if_not_exist(cls.__create_labels_combined)
+    def get_labels_combined(cls, include_invalid=False) -> list[dict[str, object]]:
+        return cls.__create_labels_combined(include_invalid)
 
     @classmethod
-    def get_corpus_exclusive(cls) -> list[dict[str, object]]:
-        corpus_labels = cls.get_corpus_labels()
+    def get_corpus_exclusive(cls, include_invalid=False) -> list[dict[str, object]]:
+        # corpus_labels = cls.get_corpus_labels()
+        corpus_labels = cls.__create_corpus_labels(include_invalid)
         isa_detect_labels = cls.get_isa_detect_csv_labels()
         isa_detect_architecture_texts = {
             *[isa_detect_label["architecture_text"] for isa_detect_label in isa_detect_labels],
@@ -45,8 +47,9 @@ class Labels:
             if label["architecture_text"] not in isa_detect_architecture_texts
         ]
 
-    @classmethod
-    def __create_corpus_labels(cls) -> list[dict[str, object]]:
+    @staticmethod
+    @cache
+    def __create_corpus_labels(include_invalid=False) -> list[dict[str, object]]:
         corpus_labels = []
         with open(Config.CORPUS_CLASSIFICATION_PATH, "r") as csv_file:
             columns_to_read = 6
@@ -79,11 +82,9 @@ class Labels:
                             item = "Big"
                         else:
                             invalid_items = True
-                            break
                     if column_name in ["wordsize", "instruction_size"]:
                         if not isinstance(item, int):
                             invalid_items = True
-                            break
                     if column_name == "architecture_text":
                         if item == "":
                             isa = next(
@@ -91,7 +92,7 @@ class Labels:
                             )
                             item = isa if isa else f"unknown_{str(randint(1, 999_999)).zfill(6)}"
                     items.append(item)
-                if not invalid_items:
+                if include_invalid or not invalid_items:
                     corpus_labels.append(dict(zip(head, items)))
         return corpus_labels
 
@@ -123,15 +124,16 @@ class Labels:
             {"architecture_text": "x32", "wordsize": 32, "endianness": "Little"},
         ]
 
-    @classmethod
-    def __create_labels_combined(cls) -> list[dict[str, object]]:
+    @staticmethod
+    @cache
+    def __create_labels_combined(include_invalid=False) -> list[dict[str, object]]:
         def labels_list_to_dict(labels_list: list[dict]) -> dict[str, dict]:
             return dict((labels["architecture_text"], labels) for labels in labels_list)
 
         labels_combined_dict = dict()
         for include_labels in [
-            cls.get_isa_detect_csv_labels(),
-            cls.get_corpus_labels(),
+            Labels.get_isa_detect_csv_labels(),
+            Labels.get_corpus_labels(include_invalid),
         ]:
             labels_combined_dict.update(labels_list_to_dict(include_labels))
 

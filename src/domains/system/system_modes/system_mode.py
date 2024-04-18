@@ -6,8 +6,8 @@ from domains.system.system_modes.test_modes.test_mode import TestMode
 from domains.system.system_modes.train_modes.train_mode import TrainMode
 
 
-class SystemMode():
-    def __init__(self, train_mode: Type[TrainMode], test_mode: Type[TestMode]) -> None:
+class SystemMode:
+    def __init__(self, train_mode: TrainMode, test_mode: TestMode) -> None:
         self.train_mode = train_mode
         self.test_mode = test_mode
 
