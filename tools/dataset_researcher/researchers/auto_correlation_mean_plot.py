@@ -7,11 +7,18 @@ from . import Researcher, AutoCorrelationMean
 
 
 class AutoCorrelationMeanPlot(Researcher):
-    def __init__(self, byte_read_count: int, lags: list[int], include_means: bool = True) -> None:
+    def __init__(
+        self,
+        byte_read_count: int,
+        lags: list[int],
+        include_means: bool = True,
+        auto_correlation_count: int = 1,
+    ) -> None:
         super().__init__()
         self.byte_read_count = byte_read_count
         self.lags = lags
         self.include_means = include_means
+        self.auto_correlation_count = auto_correlation_count
 
     def lags_str(self):
         is_continous = True
@@ -33,8 +40,9 @@ class AutoCorrelationMeanPlot(Researcher):
         for lag in self.lags:
             auto_correlation_mean = AutoCorrelationMean(self.byte_read_count, lag)
             auto_correlation_mapping = auto_correlation_mean.get_auto_correlation_mapping(dataset)
-            data = auto_correlation_mean.get_auto_correlation_means(
+            data = AutoCorrelationMean.get_auto_correlation_means(
                 auto_correlation_mapping,
+                self.include_means,
                 include_architectures_without_instruction_size=isinstance(dataset, CustomDataset),
             )
             for architecture, autocorrelation, instruction_size in data:

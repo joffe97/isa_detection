@@ -1,5 +1,6 @@
 from pathlib import Path
 import statistics
+from typing import Iterator
 from pandas import Series
 
 from domains.dataset.binary_file_dataset import BinaryFileDataset
@@ -14,12 +15,12 @@ class AutoCorrelationMean(Researcher):
         self.byte_read_count = byte_read_count
         self.lag = lag
 
+    @staticmethod
     def get_auto_correlation_means(
-        self,
         auto_correlation_mapping: dict[str, list[float]],
         include_means: bool = True,
         include_architectures_without_instruction_size: bool = True,
-    ) -> list:
+    ) -> list[tuple[str, float, str]]:
         architecture_auto_correlation_mean_mapping = dict()
         for architecture, auto_correlations in auto_correlation_mapping.items():
             auto_correlation_mean = statistics.fmean(auto_correlations)
@@ -80,10 +81,10 @@ class AutoCorrelationMean(Researcher):
         return data
 
     def get_auto_correlation_mapping(self, dataset: BinaryFileDataset) -> dict[str, list[float]]:
-        # is_custom_dataset = isinstance(dataset, CustomDataset)
-        return dataset.create_architecture_func_data_mapping(
-            self.byte_read_count, lambda x: Series(list(x)).autocorr(self.lag)
-        )
+        def auto_corr_data(data: Iterator[int]):
+            return Series(list(data)).autocorr(self.lag)
+
+        return dataset.create_architecture_func_data_mapping(self.byte_read_count, auto_corr_data)
 
     def research(self, dataset: BinaryFileDataset):
         data = self.get_auto_correlation_means(
