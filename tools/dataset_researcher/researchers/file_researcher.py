@@ -2,7 +2,6 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 import itertools
 
-from config import Config
 from domains.dataset.binary_file_dataset import BinaryFileDataset
 from .researcher import Researcher
 

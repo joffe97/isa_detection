@@ -8,12 +8,13 @@ class LabelEntry(Enum):
     INSTRUCTION_SIZE = "instruction_size"
     IS_VARIABLE_INSTRUCTION_SIZE = "is_variable_instruction_size"
     VARIABLE_INSTRUCTION_SIZE = "variable_instruction_size"
+    FIXED_INSTRUCTION_SIZE = "fixed_instruction_size"
     ARCHITECTURE_TEXT = "architecture_text"
     ARCHITECTURE_ID = "architecture"
 
     @classmethod
     def __get_exclusive_groups(cls) -> set[tuple["LabelEntry", ...]]:
-        return {(cls.INSTRUCTION_SIZE, cls.VARIABLE_INSTRUCTION_SIZE)}
+        return {(cls.FIXED_INSTRUCTION_SIZE, cls.VARIABLE_INSTRUCTION_SIZE)}
 
     @classmethod
     def __get_dependency_groups(cls) -> set[tuple["LabelEntry", ...]]:

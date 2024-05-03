@@ -1,7 +1,6 @@
 from pathlib import Path
 from matplotlib import pyplot as plt
 from . import FileResearcher
-import struct
 
 
 class DataVisualizer(FileResearcher):

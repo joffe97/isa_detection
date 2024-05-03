@@ -42,6 +42,11 @@ class CorpusLabels(LabelLoader):
             return None
         return set(included_label.value for included_label in self.included_labels)
 
+    def is_included_label_str(self, label_str: str) -> bool:
+        return (
+            included_labels_strs := self.included_labels_strs
+        ) is None or label_str in included_labels_strs
+
     @cache  # pylint: disable=W1518
     def load(self) -> list[ArchitectureLabels]:
         all_valid_corpus_labels: list[ArchitectureLabels] = []
@@ -65,39 +70,48 @@ class CorpusLabels(LabelLoader):
             for line in csv_reader:
                 item_strs = line[:columns_to_read]
                 architecture_labels = ArchitectureLabels()
-                invalid_items = False
+                # invalid_items = False
+                isa = None
                 for i, label_value in enumerate(item_strs):
                     label_name = head[i]
-                    if label_name == LabelEntry.ENDIANNESS.value:
+
+                    if label_name == "isa":
+                        isa = label_value
+                        continue
+                    # elif not self.is_included_label_str(label_name):
+                    #     continue
+                    elif label_name == LabelEntry.ENDIANNESS.value:
                         if label_value == "LE":
                             label_value = "Little"
                         elif label_value == "BE":
                             label_value = "Big"
                         else:
-                            invalid_items = True
-                            break
+                            # invalid_items = True
+                            # break
+                            continue
                     elif label_name == LabelEntry.INSTRUCTION_SIZE.value:
                         instruction_width_strs = label_value.split("-")
                         try:
                             instruction_widths = tuple(map(int, instruction_width_strs))
                             if len(instruction_widths) == 1:
                                 architecture_labels[LabelEntry.IS_VARIABLE_INSTRUCTION_SIZE] = False
-                                label_value = instruction_widths[0]
+                                architecture_labels[LabelEntry.FIXED_INSTRUCTION_SIZE] = instruction_widths[0]
                             elif len(instruction_widths) == 2:
                                 architecture_labels[LabelEntry.IS_VARIABLE_INSTRUCTION_SIZE] = True
-                                label_name = LabelEntry.VARIABLE_INSTRUCTION_SIZE.value
-                                label_value = instruction_widths
+                                architecture_labels[LabelEntry.VARIABLE_INSTRUCTION_SIZE] = instruction_widths
                             else:
                                 raise ValueError(f"Instruction width cannot be parsed: {label_value}")
                         except ValueError:
-                            invalid_items = True
-                            break
+                            # invalid_items = True
+                            # break
+                            continue
                     elif label_name == LabelEntry.WORD_SIZE.value:
                         try:
                             label_value = int(label_value)
                         except ValueError:
-                            invalid_items = True
-                            break
+                            # invalid_items = True
+                            # break
+                            continue
                     elif label_name == LabelEntry.ARCHITECTURE_TEXT.value:
                         if label_value == "":
                             isa = next(
@@ -107,8 +121,12 @@ class CorpusLabels(LabelLoader):
                     elif label_name not in LabelEntry.all_names():
                         continue
                     architecture_labels[LabelEntry.from_str(label_name)] = label_value
-                if not invalid_items:
-                    all_valid_corpus_labels.append(architecture_labels)
+                # if not invalid_items:
+                all_valid_corpus_labels.append(architecture_labels)
+                if isa and (isa != architecture_labels.get(LabelEntry.ARCHITECTURE_TEXT)):
+                    architecture_labels_copy = architecture_labels.copy()
+                    architecture_labels_copy[LabelEntry.ARCHITECTURE_TEXT] = isa
+                    all_valid_corpus_labels.append(architecture_labels_copy)
 
         if self.included_labels is not None:
             corpus_labels = []

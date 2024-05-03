@@ -2,7 +2,7 @@ from typing import Optional
 from domains.label.label_entry import LabelEntry
 
 
-class ArchitectureLabels(dict):
+class ArchitectureLabels(dict[LabelEntry, object]):
     def __init__(self, labels: Optional[dict[LabelEntry, object]] = None) -> None:
         if labels is None:
             labels = dict()

@@ -81,8 +81,8 @@ class AutoCorrelationMean(Researcher):
         return data
 
     def get_auto_correlation_mapping(self, dataset: BinaryFileDataset) -> dict[str, list[float]]:
-        def auto_corr_data(data: Iterator[int]):
-            return Series(list(data)).autocorr(self.lag)
+        def auto_corr_data(data: bytes) -> float:
+            return Series(list(iter(data))).autocorr(self.lag)
 
         return dataset.create_architecture_func_data_mapping(self.byte_read_count, auto_corr_data)
 

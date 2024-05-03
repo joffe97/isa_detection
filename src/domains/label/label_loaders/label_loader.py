@@ -11,7 +11,8 @@ class LabelLoader(ABC):
 
     def load_as_architecture_labels_mapping(self) -> dict[str, ArchitectureLabels]:
         architecture_labels = self.load()
-        return dict((label.architecture_text, label) for label in architecture_labels)
+        architecture_labels_mapping = dict((label.architecture_text, label) for label in architecture_labels)
+        return architecture_labels_mapping
 
     def load_as_binary_file_labels_mapping(
         self, architecture_binary_files_mapping: dict[str, list[str]]
