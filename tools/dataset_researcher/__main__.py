@@ -8,9 +8,8 @@ import numpy as np
 sys.path.insert(1, "/home/joachan/isa_detection/src")
 sys.path.insert(1, "/home/joachan/isa_detection/tools/dataset_researcher")
 
-from .researchers.helpers.bytes_computers.auto_correlation_computer import AutoCorrelationComputer
-
 from config import Config
+from domains.feature.bytes_computers import FourierComputer, AutoCorrelationComputer
 from domains.dataset import IsaDetect, CpuRec, IsaDetectCode
 from domains.dataset.custom.sinus_signal import SinusSignal, CustomDataset
 from researchers import (
@@ -20,6 +19,7 @@ from researchers import (
     DataVisualizer,
     AutoCorrelationMean,
     BytesComputerPlotter,
+    AutoCorrelationMeanPeakTable,
 )
 
 
@@ -43,18 +43,18 @@ if __name__ == "__main__":
     MAX_READ = 64000
     # MAX_READ = 1200
     # MAX_READ = 20000
-    lag_count = 16
+    lag_max = 16
     # datasets = [CpuRec(), IsaDetectCode(100)]
     # datasets = [IsaDetectCode(5), CpuRec()]
     datasets = [CpuRec()]
+    # datasets = [IsaDetectCode(5)]
     # datasets = [SinusSignal()]
     for dataset in datasets:
-        lags = list(range(1, lag_count + 1))
-        bytes_computer = AutoCorrelationComputer(
-            16,
-            autocorr_times=1,
-            max_data_len_for_higher_autocorr=1000,
-        )
-        BytesComputerPlotter(MAX_READ, lags, not isinstance(dataset, CustomDataset)).research(
-            dataset, bytes_computer
-        )
+        # bytes_computer = AutoCorrelationComputer(
+        #     lag_count,
+        #     autocorr_times=1,
+        #     max_data_len_for_higher_autocorr=1000,
+        # )
+        bytes_computer = FourierComputer(32)
+        BytesComputerPlotter(MAX_READ, bytes_computer).research(dataset)
+        # AutoCorrelationMeanPeakTable(MAX_READ, lag_max, lag_min=2).research(dataset)

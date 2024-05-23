@@ -25,7 +25,9 @@ class ArchitectureFileDatas:
 
     def mean_data(self) -> list[float]:
         return [
-            statistics.fmean(file_data.data[index] for file_data in self.file_datas)
+            statistics.fmean(
+                file_data.data[index] for file_data in self.file_datas if len(file_data.data) > index
+            )
             for index in range(self.get_max_file_datas_len())
         ]
 

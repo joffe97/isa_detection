@@ -41,13 +41,23 @@ class AutoCorrelationComputer(BytesComputer):
             )
         return data_list[self.lag_min : self.lag_max + 1]  # type: ignore
 
-    def get_group_name(self, data_identifiers: Optional[list[str]] = None) -> str:
+    def get_group_name(
+        self, data_identifiers: Optional[list[str]] = None, override_if_empty: str = ""
+    ) -> str:
         if data_identifiers is None:
-            data_identifiers = []
-        return "_".join([*data_identifiers, self.lags_str])
+            data_identifiers = [override_if_empty]
+        return "_".join(data_identifiers)
 
     def identifier(self) -> str:
         autocorr_str = "AutoCorrelation"
-        if self.autocorr_times == 1:
-            return autocorr_str
-        return f"{autocorr_str}{self.autocorr_times}_{self.max_data_len_for_higher_autocorr}"
+        if self.autocorr_times != 1:
+            autocorr_str += str(self.autocorr_times)
+        if self.max_data_len_for_higher_autocorr is not None:
+            autocorr_str += f"_{self.max_data_len_for_higher_autocorr}"
+        return f"{autocorr_str}_{self.lags_str}"
+
+    def x_labels(self) -> list[int]:
+        return list(self.lag_range)
+
+    def labels(self) -> tuple[str, str]:
+        return ("Lag", "Autocorrelation")

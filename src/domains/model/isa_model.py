@@ -81,7 +81,12 @@ class ISAModel:
         return labels
 
     def get_possible_values(self) -> set[str]:
-        return set(self.y_train.values.tolist()).union(self.y_test.values.tolist())
+        possible_values = set()
+        try:
+            possible_values = set(self.classifier.classes_)  # type: ignore
+        except:
+            pass
+        return possible_values.union([*self.y_test.values.tolist(), *self.y_train.values.tolist()])
 
     def train(self) -> None:
         self.get_fitted_classifer()
@@ -108,7 +113,7 @@ class ISAModel:
             return self.classifier.predict(self.x_test)  # type: ignore
 
         prediction = Caching().load_or_process_func_data(self.__prediction_file_path(), predict)
-        logging.info(f"Found prediction for ISAModel with identifier: {self.identifier}")
+        # logging.info(f"Found prediction for ISAModel with identifier: {self.identifier}")
         return prediction
 
     def precision(self) -> float:

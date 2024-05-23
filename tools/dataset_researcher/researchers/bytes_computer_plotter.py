@@ -1,13 +1,12 @@
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 from plotters.plotter import Plotter
 from domains.dataset.classes.architecture_file_datas_mapping import ArchitectureFileDatasMapping
 from domains.dataset.binary_file_dataset import BinaryFileDataset
 from domains.label.label_entry import LabelEntry
+from domains.feature.bytes_computers import BytesComputer
 from .researcher import Researcher
-from .helpers.bytes_computers.bytes_computer import BytesComputer
-from .helpers.bytes_computers.auto_correlation_computer import AutoCorrelationComputer
 
 
 class BytesComputerPlotter(Researcher):
@@ -16,26 +15,7 @@ class BytesComputerPlotter(Researcher):
         self.byte_read_count = byte_read_count
         self.bytes_computer = bytes_computer
 
-        self.__lags_str = None
         self.__group_name = None
-
-    def lags_str(self):
-        if self.__lags_str is None:
-            is_continous = True
-            lags_set = set(self.lags)
-            min_lag = min(lags_set)
-            max_lag = max(lags_set)
-            for lag in range(min_lag, max_lag + 1):
-                if lag not in lags_set:
-                    is_continous = False
-                    break
-
-            if is_continous:
-                self.__lags_str = f"{min_lag}-{max_lag}"
-            else:
-                self.__lags_str = "+".join(map(str, self.lags))
-
-        return self.__lags_str
 
     def get_group_name(self):
         if self.__group_name is None:
@@ -45,40 +25,50 @@ class BytesComputerPlotter(Researcher):
     def get_group_name_for_architecture(self, architecture: str) -> str:
         return f"{self.get_group_name()}/architecture_data/{architecture}"
 
-    @property
-    def class_name_suffix(self) -> Optional[str]:
-        return (
-            str(auto_correlation_count)
-            if (auto_correlation_count := self.auto_correlation_count) != 1
-            else None
-        )
+    def __class_name_override(self) -> str:
+        bytes_computer_identifier = self.bytes_computer.identifier()
+        return f"{bytes_computer_identifier}MeanPlot"
+
+    def __plotter(self, **kwargs) -> Plotter:
+        x_label, y_label = self.bytes_computer.labels()
+        plotter_args: dict[str, Any] = {
+            "yscale": self.bytes_computer.y_scale(),
+            "xlabel": x_label,
+            "ylabel": y_label,
+        }
+        plotter_args.update(kwargs)
+        return Plotter(**plotter_args)
 
     def _plot_file_data_mappings(
         self,
         architecture_data_mapping: ArchitectureFileDatasMapping,
     ):
+        class_name_override = self.__class_name_override()
+
         file_data_mappings = architecture_data_mapping.file_data_mappings()
         architecture_data_means_mapping = architecture_data_mapping.mean_datas()
-        dpi = 200
+        plotter = self.__plotter(dpi=200)
         for architecture, file_data_tuples in file_data_mappings.items():
             architecture_group_name = self.get_group_name_for_architecture(architecture)
             for file_name, file_data in file_data_tuples:
                 plot_path = self._create_result_path(
-                    architecture_group_name, file_name, ".png", class_name_suffix=self.class_name_suffix
+                    architecture_group_name, file_name, ".png", class_name_override=class_name_override
                 )
-                Plotter().plot(
-                    self.lags, {file_name: file_data}, f"{architecture} - {file_name}", plot_path, dpi=dpi
+                plotter.plot(
+                    self.bytes_computer.x_labels(),
+                    {file_name: file_data},
+                    f"{architecture} - {file_name}",
+                    plot_path,
                 )
             if architecture_mean_data := architecture_data_means_mapping.get(architecture):
                 plot_path = self._create_result_path(
-                    architecture_group_name, "_mean", ".png", class_name_suffix=self.class_name_suffix
+                    architecture_group_name, "_mean", ".png", class_name_override=class_name_override
                 )
-                Plotter().plot(
-                    self.lags,
+                plotter.plot(
+                    self.bytes_computer.x_labels(),
                     {f"{architecture} mean": architecture_mean_data},
                     f"{architecture} - Mean",
                     plot_path,
-                    dpi=dpi,
                 )
 
     def research(self, dataset: BinaryFileDataset):
@@ -106,32 +96,32 @@ class BytesComputerPlotter(Researcher):
         )
 
         group_name = self.get_group_name()
+        class_name_override = self.__class_name_override()
 
         def create_file_path_func(filename_ending: Optional[str] = None) -> Path:
             filename = "_".join(filter(None, [dataset.identifier(), filename_ending]))
             return self._create_result_path(
-                group_name, filename, ".png", class_name_suffix=self.class_name_suffix
+                group_name, filename, ".png", class_name_override=class_name_override
             )
 
-        plotter = Plotter()
-        plotter.plot(
-            self.lags,
+        self.__plotter(dpi=800).plot(
+            self.bytes_computer.x_labels(),
             architecture_data_means_mapping,
             dataset.identifier(),
             create_file_path_func(),
             line_group_mapping=architecture_data_means_group_mapping,
-            dpi=800,
         )
 
-        plotter.plot(
-            self.lags,
+        mean_plotter = self.__plotter()
+        mean_plotter.plot(
+            self.bytes_computer.x_labels(),
             instruction_type_data_means_mapping,
             f"{dataset.identifier()} - Type means",
             create_file_path_func("typemean"),
         )
 
-        plotter.plot(
-            self.lags,
+        mean_plotter.plot(
+            self.bytes_computer.x_labels(),
             instruction_width_data_means_mapping,
             f"{dataset.identifier()} - Size means",
             create_file_path_func("sizemean"),

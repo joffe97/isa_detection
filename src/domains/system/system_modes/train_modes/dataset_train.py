@@ -13,7 +13,7 @@ class DatasetTrain(TrainMode):
 
     def get_dataset(self, files_per_architecture: int) -> BinaryFileDataset:
         try:
-            dataset = self.dataset_class(files_per_architecture)
+            dataset = self.dataset_class(files_per_architecture)  # type: ignore
         except TypeError:
             dataset = self.dataset_class()
         return dataset

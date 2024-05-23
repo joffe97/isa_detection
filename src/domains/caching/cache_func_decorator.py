@@ -21,23 +21,47 @@ def cache_func(
             identifier_strs = []
             args_strs = list(map(str, args))
 
-            if use_class_identifier_method:
-                if not first_arg_is_self:
-                    raise ValueError(
-                        f"cache_func cannot use identifier method if first argument of cached function is not self: {func_name}"
-                    )
+            if first_arg_is_self:
                 func_self = args[0]
-                if (identifier_method := getattr(func_self, "identifier", None)) is None or not callable(
-                    identifier_method
-                ):
-                    raise ValueError(
-                        f"cache_func cannot use identifier method if the method does not exist: {func_name}"
-                    )
-                identifier_strs.append(identifier_method())
-            else:
-                if first_arg_is_self:
-                    func_self = args[0]
-                    args_strs[0] = json.dumps(func_self.__dict__, sort_keys=True)
+                if use_class_identifier_method:
+                    if (identifier_method := getattr(func_self, "identifier", None)) is None or not callable(
+                        identifier_method
+                    ):
+                        raise ValueError(
+                            f"cache_func cannot use identifier method if the method does not exist: {func_name}"
+                        )
+                    args_strs.pop(0)
+                    identifier_strs.append(identifier_method())
+                else:
+                    self_identifier = json.dumps(func_self.__dict__, sort_keys=True)
+                    args_strs[0] = self_identifier
+            elif use_class_identifier_method:
+                raise ValueError(
+                    f"cache_func cannot use identifier method if first argument of cached function is not self: {func_name}"
+                )
+
+            # if use_class_identifier_method:
+            #     if not first_arg_is_self:
+            #         raise ValueError(
+            #             f"cache_func cannot use identifier method if first argument of cached function is not self: {func_name}"
+            #         )
+            #     func_self = args[0]
+            #     if (identifier_method := getattr(func_self, "identifier", None)) is None or not callable(
+            #         identifier_method
+            #     ):
+            #         raise ValueError(
+            #             f"cache_func cannot use identifier method if the method does not exist: {func_name}"
+            #         )
+            #     # identifier_strs.append(identifier_method())
+            #     args_strs[0] = identifier_method()
+            # else:
+            #     if first_arg_is_self:
+            #         func_self = args[0]
+            #         args_strs[0] = json.dumps(func_self.__dict__, sort_keys=True)
+
+            #     # identifier = xxhash.xxh32_hexdigest(
+            #     #     "|".join([*args_strs, json.dumps(kwargs, sort_keys=True)])
+            #     # )
 
             identifier_strs.append(
                 xxhash.xxh32_hexdigest("|".join([*args_strs, json.dumps(kwargs, sort_keys=True)]))

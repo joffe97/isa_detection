@@ -1,20 +1,31 @@
 import math
 from pathlib import Path
-from typing import Optional
+from typing import Literal, Optional
 import matplotlib.pyplot as plt
 
 ALL_LINE_STYLES = ["-", "dashdot", "dotted", "dashed", (0, (3, 5, 1, 5, 1, 5))]
 
 
 class Plotter:
+    def __init__(
+        self,
+        yscale: Literal["linear", "log", "symlog", "logit"] = "linear",
+        dpi: int = 500,
+        xlabel: str = "",
+        ylabel: str = "",
+    ) -> None:
+        self.yscale = yscale
+        self.dpi = dpi
+        self.xlabel = xlabel
+        self.ylabel = ylabel
+
     def plot(
         self,
-        lines_x: list[int],
+        lines_x: Optional[list[int]],
         lines_y: dict[str, list[float]],
         title: str,
         path: Path,
         line_group_mapping: Optional[dict[str, str]] = None,
-        dpi: int = 500,
     ):
         if line_group_mapping is None:
             line_group_mapping = dict((label, label) for label in lines_y.keys())
@@ -22,13 +33,6 @@ class Plotter:
 
         fig, ax = plt.subplots(figsize=(6.5, 8))
         fig.subplots_adjust(bottom=0.25)
-        # mean_axs_instruction_size_replacer = {}
-        # if self.include_means:
-        #     fig1, ax1 = plt.subplots()
-        #     fig2, ax2 = plt.subplots(figsize=(6.5, 8))
-        #     fig2.subplots_adjust(bottom=0.25)
-        #     axs_list.extend([ax1, ax2])
-        #     mean_axs_instruction_size_replacer.update({"type_mean": ax1, "size_mean": ax2})
 
         lines_count = len(lines_y)
         line_width = next(
@@ -57,10 +61,7 @@ class Plotter:
                 )
             )
         )
-        # 5 * 0 // 3 = 0
-        # 5 * 1 // 3 = 1
-        # 5 * 2 // 3 = 3
-        # 5 * 3 // 3 = 5
+
         line_group_traversed_counts = dict((line_style_group, 0) for line_style_group in line_groups)
         for label, line_data in lines_y.items():
             line_style = "-"
@@ -74,45 +75,27 @@ class Plotter:
             if line_group is not None and label != line_group:
                 label = ", ".join([label, line_group])
 
-            ax.plot(lines_x, line_data, label=label, linewidth=line_width, linestyle=line_style)
+            if lines_x is None:
+                ax.plot(line_data, label=label, linewidth=line_width, linestyle=line_style)
+            else:
+                ax.plot(lines_x, line_data, label=label, linewidth=line_width, linestyle=line_style)
 
-        ax.set_xlabel("Lag")
-        ax.set_ylabel("Autocorrelation")
+        if self.xlabel:
+            ax.set_xlabel(self.xlabel)
+        if self.ylabel:
+            ax.set_ylabel(self.ylabel)
 
+        ax.set_yscale(self.yscale)  # type: ignore
+
+        legend_ncol = 4 + int(len(lines_y) > 30)
         ax.legend(
             loc="upper center",
             bbox_to_anchor=(0.5, -0.1),
-            ncol=4,
+            ncol=legend_ncol,
             fontsize="xx-small",
         )
         ax.set_title(title)
 
-        # group_name = "_".join(map(str, [self.byte_read_count, self.lags_str()]))
-        # file_path = self._create_result_path(group_name, dataset.identifier(), ".png")
-
         path.parent.mkdir(parents=True, exist_ok=True)
-        fig.savefig(str(path), dpi=dpi)
+        fig.savefig(str(path), dpi=self.dpi)
         plt.close(fig)
-
-        # if self.include_means:
-        #     ax1.plot(
-        #         self.lags,
-        #         np.array(data_with_all_lags["Fixed mean"][0])
-        #         - np.array(data_with_all_lags["Variable mean"][0]),
-        #         label="Difference",
-        #         linewidth=line_width[ax1],
-        #         linestyle="--",
-        #     )
-        #     ax1.legend(loc="upper center", bbox_to_anchor=(0.5, 0.1), ncol=3)
-        #     ax2.legend(loc="upper center", bbox_to_anchor=(0.5, -0.1), ncol=4)
-        #     ax1.set_title(f"{dataset.identifier()} - Type means (absolute)")
-        #     ax2.set_title(f"{dataset.identifier()} - Size means (absolute)")
-
-        #     file_path_type_mean = self._create_result_path(
-        #         group_name, f"{dataset.identifier()}_typemean", ".png"
-        #     )
-        #     file_path_size_mean = self._create_result_path(
-        #         group_name, f"{dataset.identifier()}_sizemean", ".png"
-        #     )
-        #     fig1.savefig(str(file_path_type_mean), dpi=500)
-        #     fig2.savefig(str(file_path_size_mean), dpi=500)

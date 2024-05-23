@@ -6,13 +6,14 @@ from sklearn.svm import SVC
 from sklearn.naive_bayes import GaussianNB
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.tree import DecisionTreeClassifier
-from domains.dataset import IsaDetectCode, CpuRec
+
 from domains.system.setup import Setup
-from domains.visualizer.result_savers.visualizer_saver import VisualizerSaver
 
 Setup().with_all_config()
 from config import Config
 
+from domains.dataset import IsaDetectCode, IsaDetect, CpuRec
+from domains.visualizer.result_savers.visualizer_saver import VisualizerSaver
 from domains.feature.feature_computer_container import FeatureComputerContainer
 from domains.feature.feature_computer_container_collection import (
     FeatureComputerContainerCollection,
@@ -28,6 +29,7 @@ from domains.system.system_modes.train_modes import DatasetTrain
 from domains.system.system import System
 from domains.feature.file_feature_computers import (
     TrigramsNonZero,
+    Trigrams,
     ByteFrequencyDistribution,
     Bigrams,
     EndiannessSignatures,
@@ -36,30 +38,42 @@ from domains.feature.file_feature_computers import (
     AutoCorrelation,
     AutoCorrelationChunks,
     AutoCorrelations,
+    AdaptedBytesComputer,
 )
+from domains.feature.bytes_computers import AutoCorrelationPeakComputer, AutoCorrelationComputer
 from domains.visualizer.visualizers import Visualizer, ModelPrecision, BaseLine, StandardDeviations
 from domains.visualizer.result_savers import ResultSaver, ConfusionMatrix
 
 
 def run_system():
-    # system_mode = SystemMode(ISADetectTrain, SimpleTest)
-    # system_mode = SystemMode(DatasetTrain(CpuRec), SimpleTest())
-    system_mode = SystemMode(DatasetTrain(CpuRec), DatasetTest(IsaDetectCode(10)))
+    # system_mode = SystemMode(DatasetTrain(IsaDetectCode), SimpleTest())
+    # system_mode = SystemMode(DatasetTrain(IsaDetectCode), DatasetTest(CpuRec()))
+    # system_mode = SystemMode(DatasetTrain(IsaDetectCode), DatasetTest(IsaDetect(10)))
+    # system_mode = SystemMode(DatasetTrain(IsaDetect), DatasetTest(IsaDetectCode(10)))
+    # system_mode = SystemMode(DatasetTrain(IsaDetect), SimpleTest())
+    system_mode = SystemMode(DatasetTrain(CpuRec), SimpleTest())
+    # system_mode = SystemMode(DatasetTrain(CpuRec), DatasetTest(IsaDetectCode(50)))
 
     feature_computer_container_params: list[list] = [
         # [AutoCorrelationChunks(chunk_size=1024, chunk_count=1, lag=1)],
-        # [BigramDifference],
+        # [BigramDifference()],
         # [AutoCorrelation(8)],
         # [AutoCorrelation(4)],
         # [AutoCorrelation(), ByteFrequencyDistribution()],
-        [AutoCorrelations(list(range(1, 16 + 1)))]
+        # [AutoCorrelations(list(range(1, 16 + 1)))],
+        [AdaptedBytesComputer(AutoCorrelationComputer(16))],
+        [AdaptedBytesComputer(AutoCorrelationComputer(32))],
+        [AdaptedBytesComputer(AutoCorrelationComputer(128))],
+        # [AdaptedBytesComputer(AutoCorrelationPeakComputer(32, n_peaks=8))],
+        # [AdaptedBytesComputer(AutoCorrelationPeakComputer(64, n_peaks=8))],
         # [ByteDifference, Bigrams],
-        # [ByteDifference],
+        # [ByteDifference()],
         # [(TrigramsNonZero, MostCommon(1000))],
-        # [ByteFrequencyDistribution],
-        # [Bigrams],
-        # [EndiannessSignatures],
-        # [EndiannessSignatures, ByteFrequencyDistribution]
+        # [Trigrams()],
+        # [ByteFrequencyDistribution()],
+        # [Bigrams()],
+        # [EndiannessSignatures()],
+        # [EndiannessSignatures(), ByteFrequencyDistribution()],
     ]
     feature_computer_container_collections = [
         FeatureComputerContainerCollection(
@@ -78,11 +92,11 @@ def run_system():
     RANDOM_STATE = 42
     classifiers = [
         RandomForestClassifier(n_jobs=-1, random_state=RANDOM_STATE),
-        LogisticRegression(max_iter=10_000, n_jobs=-1, random_state=RANDOM_STATE),
-        SVC(kernel="linear", random_state=RANDOM_STATE),
-        SVC(kernel="poly", random_state=RANDOM_STATE),
-        SVC(kernel="sigmoid", random_state=RANDOM_STATE),
-        SVC(kernel="rbf", random_state=RANDOM_STATE),
+        LogisticRegression(max_iter=10_000, n_jobs=-1, random_state=RANDOM_STATE, C=100_000_000),
+        SVC(kernel="linear", random_state=RANDOM_STATE, C=1_000_000),
+        SVC(kernel="poly", random_state=RANDOM_STATE, C=100_000),
+        SVC(kernel="sigmoid", random_state=RANDOM_STATE, C=0.01),
+        SVC(kernel="rbf", random_state=RANDOM_STATE, C=10_000),
         GaussianNB(),
         KNeighborsClassifier(1, n_jobs=-1),
         KNeighborsClassifier(3, n_jobs=-1),
@@ -91,11 +105,17 @@ def run_system():
         # MLPClassifier(max_iter=10_000, random_state=random_state),
     ]
 
-    target_labels = [LabelEntry.IS_VARIABLE_INSTRUCTION_SIZE, LabelEntry.WORD_SIZE, LabelEntry.ENDIANNESS]
+    target_labels = [
+        # LabelEntry.WORD_SIZE,
+        # LabelEntry.ENDIANNESS,
+        LabelEntry.IS_VARIABLE_INSTRUCTION_SIZE,
+        LabelEntry.FIXED_INSTRUCTION_SIZE,
+        # LabelEntry.WORD_SIZE
+    ]
 
     files_per_architecture_list = [10]
 
-    isa_model_configuration = ISAModelConfiguration.create_every_combination(
+    isa_model_configurations = ISAModelConfiguration.create_every_combination(
         feature_computer_container_collections,
         classifiers,
         files_per_architecture_list,
@@ -104,11 +124,11 @@ def run_system():
 
     visualizers: list[Type[Visualizer]] = [BaseLine, ModelPrecision]
     result_savers: list[ResultSaver] = [
-        ConfusionMatrix(),
         *VisualizerSaver.create_list_from_visualizers(visualizers),
+        ConfusionMatrix(),
     ]
 
-    System(system_mode, isa_model_configuration).run_and_visualize(visualizers, result_savers)
+    System(system_mode, isa_model_configurations).run_and_visualize(visualizers, result_savers)
 
 
 if __name__ == "__main__":

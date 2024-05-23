@@ -38,12 +38,9 @@ class ConfusionMatrix(ResultSaver):
             all_y_true = []
             all_y_pred = []
             for result in isa_model_info.results.collection:
-                # identifier = "/".join([configuration_identifier, result.architecture_text])
-                # plot_title = "\n".join([configuration_str, result.architecture_text])
-
                 y_test = result.correct_outputs.to_list()
                 prediction = result.prediction.tolist()
-                labels = list(result.isa_model.get_possible_values())
+                labels = list(result.possible_values)
 
                 all_y_true.extend(y_test)
                 all_y_pred.extend(prediction)
@@ -56,16 +53,6 @@ class ConfusionMatrix(ResultSaver):
                     configuration_identifier,
                     configuration_str,
                 )
-
-                # display = ConfusionMatrixDisplay.from_predictions(y_test, prediction, labels=labels)
-                # ax = plt.axes()
-                # ax.set_title(plot_title)
-                # display.plot(ax=ax)
-
-                # cur_path = self._filepath_for_identifier(".png", identifier)
-                # cur_path.parent.mkdir(parents=True, exist_ok=True)
-                # plt.savefig(cur_path)
-                # plt.close()
 
             self._create_and_save_confusion_matrix(
                 all_y_true,

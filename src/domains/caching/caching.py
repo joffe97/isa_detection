@@ -18,7 +18,7 @@ class Caching:
         *,
         cache_disabled: Optional[bool] = None,
     ) -> Any:
-        if cache_disabled is None:
+        if cache_disabled is not False:
             cache_disabled = Config.CACHE_DISABLED
         logging.debug(f"Started cache function for file: {data_path.absolute()}")
         if cache_disabled:

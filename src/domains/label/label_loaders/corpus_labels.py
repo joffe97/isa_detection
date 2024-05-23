@@ -10,19 +10,20 @@ from domains.label.label_loaders.label_loader import LabelLoader
 
 class CorpusLabels(LabelLoader):
     def __init__(self, included_labels: Optional[set[LabelEntry]] = None) -> None:
-        super().__init__()
-        self.included_labels = included_labels
+        if included_labels is None:
+            included_labels = set()
+        default_included_labels = {LabelEntry.ARCHITECTURE_TEXT}
+        self.included_labels = default_included_labels.union(included_labels)
 
         self.raise_exception_if_invalid_included_labels()
+
+        super().__init__()
 
     @classmethod
     def with_default_included_labels(
         cls, included_labels: Optional[set[LabelEntry]] = None
     ) -> "CorpusLabels":
-        if included_labels is None:
-            included_labels = set()
-        default_included_labels = {LabelEntry.ARCHITECTURE_TEXT}
-        return cls(default_included_labels.union(included_labels))
+        return cls(included_labels)
 
     def raise_exception_if_invalid_included_labels(self) -> None:
         if self.included_labels is None:

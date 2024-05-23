@@ -20,7 +20,8 @@ class ISAModelCollection:
 
     def __get_classifier_identifier(self) -> str:
         classifier_name = self.classifier.__class__.__name__
-        classifier_dict_hash = xxhash.xxh32(str(self.classifier.__dict__)).hexdigest()
+        # classifier_dict_hash = xxhash.xxh32(str(self.classifier.__dict__)).hexdigest()
+        classifier_dict_hash = xxhash.xxh32(str(self.classifier)).hexdigest()
         return f"{classifier_name}_{classifier_dict_hash}"
 
     def with_isa_binary_features(
@@ -97,5 +98,5 @@ class ISAModelCollection:
 
     def find_results(self) -> ISAModelResultCollection:
         return ISAModelResultCollection(
-            [ISAModelResult(isa_model, isa_model.prediction()) for isa_model in self.isa_models.values()]
+            [ISAModelResult.from_isa_model(isa_model) for isa_model in self.isa_models.values()]
         )

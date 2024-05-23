@@ -9,3 +9,4 @@ from .bigram_difference import BigramDifference
 from .auto_correlation import AutoCorrelation
 from .auto_correlations import AutoCorrelations
 from .auto_correlation_chunks import AutoCorrelationChunks
+from .adapted_bytes_computer import AdaptedBytesComputer

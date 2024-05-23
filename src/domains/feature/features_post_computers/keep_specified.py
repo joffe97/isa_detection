@@ -7,16 +7,25 @@ class KeepSpecified(FeaturesPostComputer):
         super().__init__()
         self.labels_to_keep = labels_to_keep
 
+    def _equals_labels_to_keep(self, labels: list[str]) -> bool:
+        return labels == self.labels_to_keep
+
     def compute(self, features: list[dict[str, FeatureEntry]]) -> list[dict[str, float]]:
-        return NoPostComputing().compute(
-            [
-                dict(
-                    # (feature_key, feature_value)
-                    # for feature_key, feature_value in feature.items()
-                    # if feature_key in self.labels_to_keep
-                    (label_to_keep, feature.get(label_to_keep, FeatureEntry(0.0, 0)))
-                    for label_to_keep in self.labels_to_keep
+        if len(features) == 0:
+            return []
+
+        first_feature = features[0]
+        feature_labels = list(first_feature.keys())
+
+        if not self._equals_labels_to_keep(feature_labels):
+            features = [
+                (
+                    dict(
+                        (label_to_keep, feature.get(label_to_keep, FeatureEntry(0.0, 0)))
+                        for label_to_keep in self.labels_to_keep
+                    )
                 )
                 for feature in features
             ]
-        )
+
+        return NoPostComputing().compute(features)
