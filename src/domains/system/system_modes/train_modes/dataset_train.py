@@ -1,4 +1,4 @@
-from typing import Type
+from typing import Optional, Type
 from domains.dataset.binary_file_dataset import BinaryFileDataset
 from domains.feature.isa_binary_features_picker import ISABinaryFeaturesPicker
 from domains.model.isa_model_collection import ISAModelCollection
@@ -11,7 +11,7 @@ class DatasetTrain(TrainMode):
         super().__init__()
         self.dataset_class = dataset_class
 
-    def get_dataset(self, files_per_architecture: int) -> BinaryFileDataset:
+    def get_dataset(self, files_per_architecture: Optional[int]) -> BinaryFileDataset:
         try:
             dataset = self.dataset_class(files_per_architecture)  # type: ignore
         except TypeError:

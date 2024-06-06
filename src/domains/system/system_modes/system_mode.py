@@ -1,5 +1,3 @@
-from typing import Type
-
 from domains.model.info.isa_model_result_collection import ISAModelResultCollection
 from domains.model.isa_model_configuration import ISAModelConfiguration
 from domains.system.system_modes.test_modes.test_mode import TestMode

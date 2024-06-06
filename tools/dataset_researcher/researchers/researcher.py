@@ -50,5 +50,5 @@ class Researcher(ABC):
         return cls._create_result_path(group_name, filename, suffix, use_time_directory)
 
     @abstractmethod
-    def research(self, dataset: BinaryFileDataset):
+    def research(self, dataset: BinaryFileDataset) -> None:
         pass

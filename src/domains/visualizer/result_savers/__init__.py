@@ -1,2 +1,3 @@
 from .result_saver import ResultSaver
 from .confusion_matrix import ConfusionMatrix
+from .classifier_hyperparams_comparison import ClassifierHyperparamsComparison

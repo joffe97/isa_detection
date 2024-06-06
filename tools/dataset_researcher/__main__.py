@@ -57,4 +57,4 @@ if __name__ == "__main__":
         # )
         bytes_computer = FourierComputer(32)
         BytesComputerPlotter(MAX_READ, bytes_computer).research(dataset)
-        # AutoCorrelationMeanPeakTable(MAX_READ, lag_max, lag_min=2).research(dataset)
+        AutoCorrelationMeanPeakTable(MAX_READ, lag_max, lag_min=2).research(dataset)

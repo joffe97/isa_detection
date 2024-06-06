@@ -116,6 +116,9 @@ class ISAModel:
         # logging.info(f"Found prediction for ISAModel with identifier: {self.identifier}")
         return prediction
 
+    def prediction_probabilities(self) -> np.ndarray:
+        return self.get_fitted_classifer().predict_proba(self.x_test)  # type: ignore
+
     def precision(self) -> float:
         def calculate_precision():
             predictions = self.prediction().tolist()

@@ -1,3 +1,4 @@
+from typing import Optional, Type
 from domains.caching import cache_func
 from domains.feature.features_post_computers import (
     FeaturesPostComputer,
@@ -15,9 +16,21 @@ class FeatureComputerContainer:
         self.file_feature_computer = file_feature_computer
         self.features_post_computer = features_post_computer
 
-    def identifier(self) -> str:
+    def identifier(
+        self, ignore_features_post_computers: Optional[list[Type[FeaturesPostComputer]]] = None
+    ) -> str:
+        if ignore_features_post_computers is None:
+            ignore_features_post_computers = []
+
         feature_computers_str = self.file_feature_computer.identifier()
         features_post_computer_str = self.features_post_computer.identifier()
+
+        if any(
+            ignore_features_post_computer
+            for ignore_features_post_computer in ignore_features_post_computers
+            if isinstance(self.features_post_computer, ignore_features_post_computer)
+        ):
+            features_post_computer_str = ""
 
         parts = list(filter(None, [feature_computers_str, features_post_computer_str]))
         return "+".join(parts)

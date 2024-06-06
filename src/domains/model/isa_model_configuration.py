@@ -1,3 +1,4 @@
+from typing import Optional
 import sklearn
 from sklearn.base import (
     ClassifierMixin,
@@ -17,7 +18,7 @@ class ISAModelConfiguration:
         self,
         feature_computer_container_collection: FeatureComputerContainerCollection,
         classifier: ClassifierMixin,
-        files_per_architecture: int,
+        files_per_architecture: Optional[int],
         target_label: LabelEntry,
     ) -> None:
         self.feature_computer_container_collection = feature_computer_container_collection
@@ -29,7 +30,7 @@ class ISAModelConfiguration:
     def create_every_combination(
         feature_computer_container_collections: list[FeatureComputerContainerCollection],
         classifiers: list[ClassifierMixin],
-        files_per_architecture_list: list[int],
+        files_per_architecture_list: list[Optional[int]],
         target_labels: list[LabelEntry],
     ) -> list["ISAModelConfiguration"]:
         return [
