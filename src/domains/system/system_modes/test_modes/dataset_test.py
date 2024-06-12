@@ -1,5 +1,4 @@
 from domains.dataset.binary_file_dataset import BinaryFileDataset
-from domains.dataset.cpu_rec import CpuRec
 from domains.feature.features_post_computers import KeepSpecified
 from domains.feature.isa_binary_features_picker import ISABinaryFeaturesPicker
 from domains.model.info.isa_model_result_collection import ISAModelResultCollection

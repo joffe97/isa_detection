@@ -1,6 +1,7 @@
 import pathlib
 import time
 import datetime
+from typing import Optional
 
 
 class Config:
@@ -13,13 +14,17 @@ class Config:
 
     ISA_DETECT_DATASET_PATH = DATASETS_PATH.joinpath("isa-detect-data")
     CPU_REC_DATASET_PATH = DATASETS_PATH.joinpath("cpu_rec_corpus")
-    CORPUS_CLASSIFICATION_PATH = DATASETS_PATH.joinpath("corpus_classification_isa.csv")
+    CORPUS_CLASSIFICATION_PATH = DATASETS_PATH.joinpath(
+        "corpus_classification_isa.csv"
+    )
     CUSTOM_DATASET_PATH = DATASETS_PATH.joinpath("custom")
 
     CACHE_DISABLED = False
     RUN_RESULT_SAVERS = False
 
     START_TIME = time.time()
+
+    __runtime_identifier = None
 
     @classmethod
     def disable_cache(cls):
@@ -43,3 +48,11 @@ class Config:
         minute = str(start_datetime.minute).zfill(2)
         second = str(start_datetime.second).zfill(2)
         return f"{year}{month}{day}_{hour}{minute}{second}"
+
+    @classmethod
+    def set_runtime_identifier(cls, runtime_identifier: Optional[str]):
+        cls.__runtime_identifier = runtime_identifier
+
+    @classmethod
+    def get_runtime_identifier(cls) -> str:
+        return cls.__runtime_identifier or cls.get_readable_start_datetime()

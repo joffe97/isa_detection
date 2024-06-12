@@ -1,5 +1,6 @@
 from typing import Optional
 from pandas import Series
+import numpy as np
 from .bytes_computer import BytesComputer
 
 
@@ -27,22 +28,33 @@ class AutoCorrelationComputer(BytesComputer):
     def compute(self, data: bytes) -> list[float]:
         if self.autocorr_times == 0:
             return list(map(float, data))
-        elif self.autocorr_times == 1:
-            return list(Series(list(iter(data))).autocorr(lag) for lag in self.lag_range)
 
         data_list = list(iter(data))
+        if self.autocorr_times == 1:
+            data_series = Series(data_list)
+            autocorr_list = list(
+                data_series.autocorr(lag) for lag in self.lag_range
+            )
+            while np.isnan(autocorr_list[-1]):  # type: ignore
+                autocorr_list.pop()
+            return autocorr_list
+
         possible_data_lens = [len(data_list)]
         if self.max_data_len_for_higher_autocorr is not None:
             possible_data_lens.append(self.max_data_len_for_higher_autocorr)
         data_len_for_higher_autocorr = min(*possible_data_lens)
+
         for _ in range(self.autocorr_times):
             data_list = list(
-                Series(data_list).autocorr(lag) for lag in range(data_len_for_higher_autocorr + 1)
+                Series(data_list).autocorr(lag)
+                for lag in range(data_len_for_higher_autocorr + 1)
             )
         return data_list[self.lag_min : self.lag_max + 1]  # type: ignore
 
     def get_group_name(
-        self, data_identifiers: Optional[list[str]] = None, override_if_empty: str = ""
+        self,
+        data_identifiers: Optional[list[str]] = None,
+        override_if_empty: str = "",
     ) -> str:
         if data_identifiers is None:
             data_identifiers = [override_if_empty]

@@ -5,23 +5,20 @@ from config import Config
 from domains.model.info.isa_model_info import ISAModelInfo
 from domains.model.info.isa_model_info_collection import ISAModelInfoCollection
 from domains.model.isa_model_configuration import ISAModelConfiguration
-from domains.system.system_modes import SystemMode
+from domains.system.system_modes.system_mode import SystemMode
 from domains.visualizer.visualizers import Visualizer
 from domains.visualizer.result_savers import ResultSaver
 
 
 class System:
-    def __init__(
-        self, system_mode: SystemMode, isa_model_configurations: list[ISAModelConfiguration]
-    ) -> None:
-        self.system_mode = system_mode
-        self.isa_model_configurations = isa_model_configurations
+    def __init__(self, system_modes: list[SystemMode]) -> None:
+        self.system_modes = system_modes
 
     def run(self) -> ISAModelInfoCollection:
         isa_model_info_list = []
-        for isa_model_configuration in self.isa_model_configurations:
-            result_collection = self.system_mode.run(isa_model_configuration)
-            isa_model_info = ISAModelInfo(isa_model_configuration, result_collection)
+        for system_mode in self.system_modes:
+            result_collection = system_mode.run()
+            isa_model_info = ISAModelInfo(system_mode.isa_model_configuration, result_collection)
             isa_model_info_list.append(isa_model_info)
 
         isa_model_info_collection = ISAModelInfoCollection(isa_model_info_list)

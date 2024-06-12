@@ -1,7 +1,6 @@
 from typing import Optional
 
 import pathlib
-import logging
 import numpy as np
 from pandas import DataFrame, Series
 from sklearn.base import ClassifierMixin

@@ -6,7 +6,7 @@ from domains.dataset.binary_file_dataset import BinaryFileDataset
 
 
 class IsaDetect(BinaryFileDataset):
-    def __init__(self, file_index_end: Optional[int] = -1) -> None:
+    def __init__(self, file_index_end: Optional[int] = None) -> None:
         super().__init__()
         self.file_index_end = file_index_end
 

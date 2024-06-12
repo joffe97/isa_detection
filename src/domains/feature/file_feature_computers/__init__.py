@@ -4,7 +4,7 @@ from .trigrams import Trigrams
 from .trigrams_non_zero import TrigramsNonZero
 from .byte_frequency_distribution import ByteFrequencyDistribution
 from .endianness_signatures import EndiannessSignatures
-from .byte_difference import ByteDifference
+from .byte_difference_primes import ByteDifferencePrimes
 from .bigram_difference import BigramDifference
 from .auto_correlation import AutoCorrelation
 from .auto_correlations import AutoCorrelations

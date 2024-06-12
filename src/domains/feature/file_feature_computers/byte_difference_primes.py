@@ -4,7 +4,7 @@ from helpers.prime import FIRST_PRIMES, prime_factors
 from .file_feature_computer import FileFeatureComputer
 
 
-class ByteDifference(FileFeatureComputer):
+class ByteDifferencePrimes(FileFeatureComputer):
     @staticmethod
     def create_byte_difference_lists(binary_file: str) -> list[dict[int, int]]:
         byte_difference_lists: list[dict[int, int]] = [dict() for _ in range(256)]

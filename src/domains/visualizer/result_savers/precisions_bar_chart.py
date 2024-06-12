@@ -18,10 +18,11 @@ class PrecisionsBarChart(ResultSaver):
             configuration = isa_model_info.configuration
             results = isa_model_info.results
 
-            # target_label = configuration.target_label.value
             plot_identifier = "/".join(
                 [configuration.target_label.value, str(configuration.files_per_architecture)]
             )
+            all_plot_identifier = "/".join([configuration.target_label.value, "all"])
+
             classifier_str = str(configuration.classifier)
             classifier_str_split = classifier_str.split("(")
             classifier_str_type = classifier_str_split[0]
@@ -40,9 +41,12 @@ class PrecisionsBarChart(ResultSaver):
 
             mean_precision = results.mean_precision()
 
-            features_classifier_mapping = plot_identifier_feature_mapping.setdefault(plot_identifier, dict())
-            classifier_precision_mapping = features_classifier_mapping.setdefault(feature_identifier, dict())
-            classifier_precision_mapping[readable_classifier_str] = mean_precision
+            for identifier in [plot_identifier, all_plot_identifier]:
+                features_classifier_mapping = plot_identifier_feature_mapping.setdefault(identifier, dict())
+                classifier_precision_mapping = features_classifier_mapping.setdefault(
+                    feature_identifier, dict()
+                )
+                classifier_precision_mapping[readable_classifier_str] = mean_precision
 
         bar_width = 0.2
 
@@ -75,7 +79,7 @@ class PrecisionsBarChart(ResultSaver):
             ax.set_xticks(index + bar_width / 2)
             ax.set_xticklabels(xticklabels, rotation=90)
             ax.legend(loc="lower left")
-            ax.set_ylim(top=1.0)
+            ax.set_ylim(top=1.1)
 
             fig_path = self._filepath_for_identifier(".png", plot_identifier)
             fig_path.parent.mkdir(parents=True, exist_ok=True)
