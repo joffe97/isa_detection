@@ -14,7 +14,7 @@ from domains.feature.bytes_computers import (
     AutoCorrelationComputer,
     AutoCorrelationFftComputer,
 )
-from domains.dataset import IsaDetect, CpuRec, IsaDetectCode
+from domains.dataset import IsaDetectFull, CpuRec, IsaDetectCode
 from domains.dataset.custom.sinus_signal import SinusSignal, CustomDataset
 from researchers import (
     Researcher,
@@ -50,13 +50,14 @@ def autocorr_plotfunc(
 
 
 if __name__ == "__main__":
-    MAX_READ = 64000
-    # MAX_READ = 1200
+    # MAX_READ = 64000
+    MAX_READ = None
+    # MAX_READ = 1000
     # MAX_READ = 10
     # MAX_READ = 20000
     # datasets = [CpuRec(), IsaDetectCode(100)]
     # datasets = [IsaDetectCode(5), CpuRec()]
-    datasets = [CpuRec(), IsaDetectCode(1), IsaDetect(1)]
+    datasets = [CpuRec(), IsaDetectCode(1), IsaDetectFull(1)]
     # datasets = [IsaDetectCode(5)]
     # datasets = [SinusSignal()]
     for dataset in datasets:
@@ -65,9 +66,11 @@ if __name__ == "__main__":
         #     autocorr_times=1,
         #     max_data_len_for_higher_autocorr=1000,
         # )
-        # bytes_computer = FourierComputer(32)
-        # bytes_computer = AutoCorrelationFftComputer(20)
+        bytes_computer = FourierComputer(128)
+        # bytes_computer = AutoCorrelationComputer(32)
+        # bytes_computer = AutoCorrelationFftComputer(32)
         # bytes_computer = AutoCorrelationFftComputer(16)
-        # bytes_computer = FourierComputer(16)
-        # BytesComputerPlotter(MAX_READ, bytes_computer).research(dataset)
-        AutoCorrelationMeanPeakTable(MAX_READ, 32, lag_min=2).research(dataset)
+        # bytes_computer = FourierComputer(32)
+        # DataVisualizer(1000).research(dataset)
+        BytesComputerPlotter(MAX_READ, bytes_computer).research(dataset)
+        # AutoCorrelationMeanPeakTable(MAX_READ, 32, lag_min=2).research(dataset)

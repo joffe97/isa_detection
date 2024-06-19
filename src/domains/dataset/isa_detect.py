@@ -5,7 +5,7 @@ from config import Config
 from domains.dataset.binary_file_dataset import BinaryFileDataset
 
 
-class IsaDetect(BinaryFileDataset):
+class IsaDetectFull(BinaryFileDataset):
     def __init__(self, file_index_end: Optional[int] = None) -> None:
         super().__init__()
         self.file_index_end = file_index_end
@@ -16,10 +16,14 @@ class IsaDetect(BinaryFileDataset):
                 arch_dir.split("/")[-1],
                 (
                     file_paths := sorted(
-                        file_path for file_path in glob(f"{arch_dir}/*") if not file_path.endswith(".json")
+                        file_path
+                        for file_path in glob(f"{arch_dir}/*")
+                        if not file_path.endswith(".json")
                     )
                 )[: self.file_index_end or len(file_paths)],
             )
-            for arch_dir in glob(f"{Config.ISA_DETECT_DATASET_PATH}/new_new_dataset/binaries/*")
+            for arch_dir in glob(
+                f"{Config.ISA_DETECT_DATASET_PATH}/new_new_dataset/binaries/*"
+            )
         )
         return architecture_binary_files_dict

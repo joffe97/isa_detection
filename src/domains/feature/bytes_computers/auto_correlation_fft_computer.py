@@ -18,7 +18,7 @@ class AutoCorrelationFftComputer(BytesComputer):
 
     def compute(self, data: bytes) -> list[int]:
         autocorr_data = AutoCorrelationComputer(len(data)).compute(data)
-        fft_real = fft(autocorr_data).real
+        fft_real = np.abs(fft(autocorr_data))
 
         if (data_len := self.data_len) is not None:
             missing_len = len(fft_real) - data_len

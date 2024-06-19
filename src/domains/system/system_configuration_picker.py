@@ -10,7 +10,7 @@ from sklearn.tree import DecisionTreeClassifier
 
 from config import Config
 from domains.dataset.cpu_rec import CpuRec
-from domains.dataset.isa_detect import IsaDetect
+from domains.dataset.isa_detect import IsaDetectFull
 from domains.dataset.isa_detect_code import IsaDetectCode
 from domains.feature.feature_computer_container import FeatureComputerContainer
 from domains.feature.feature_computer_container_collection import (
@@ -215,7 +215,7 @@ class SystemConfigurationPicker:
         ]
 
     @classmethod
-    def hyperparams_endianness_full_10_20(cls) -> SystemConfiguration:
+    def hyperparams_endianness_full_30_100(cls) -> SystemConfiguration:
         return SystemConfiguration.with_hyperparam_visres(
             [
                 (
@@ -223,7 +223,7 @@ class SystemConfigurationPicker:
                     [
                         *[
                             (
-                                DatasetTrain(IsaDetect),
+                                DatasetTrain(IsaDetectFull),
                                 SimpleTest(),
                                 Bigrams(),
                                 cls.get_hyperparam_classifiers(10**c, 10**c),
@@ -234,7 +234,7 @@ class SystemConfigurationPicker:
                         ],
                         *[
                             (
-                                DatasetTrain(IsaDetect),
+                                DatasetTrain(IsaDetectFull),
                                 SimpleTest(),
                                 EndiannessSignatures(),
                                 cls.get_hyperparam_classifiers(10**c, 10**c),
@@ -249,7 +249,7 @@ class SystemConfigurationPicker:
                     "hyperparams_endianness_isadetect_100",
                     [
                         (
-                            DatasetTrain(IsaDetect),
+                            DatasetTrain(IsaDetectFull),
                             SimpleTest(),
                             EndiannessSignatures(),
                             cls.get_hyperparam_classifiers(10**c, 10**c),
@@ -303,40 +303,51 @@ class SystemConfigurationPicker:
                 (
                     "hyperparams_isvar",
                     [
-                        *[
-                            (
-                                DatasetTrain(CpuRec),
-                                SimpleTest(),
-                                ByteDifferencePrimes(),
-                                cls.get_hyperparam_classifiers(10**c, 10**c),
-                                None,
-                                LabelEntry.IS_VARIABLE_INSTRUCTION_SIZE,
-                            )
-                            for c in list(range(-4, 7))
-                        ],
-                        *[
-                            (
-                                DatasetTrain(CpuRec),
-                                SimpleTest(),
-                                AdaptedBytesComputer(
-                                    AutoCorrelationComputer(128)
-                                ),
-                                cls.get_hyperparam_classifiers(10**c, 10**c),
-                                None,
-                                LabelEntry.IS_VARIABLE_INSTRUCTION_SIZE,
-                            )
-                            for c in list(range(-1, 7))
-                        ],
+                        # *[
+                        #     (
+                        #         DatasetTrain(CpuRec),
+                        #         SimpleTest(),
+                        #         ByteDifferencePrimes(),
+                        #         cls.get_hyperparam_classifiers(10**c, 10**c),
+                        #         None,
+                        #         LabelEntry.IS_VARIABLE_INSTRUCTION_SIZE,
+                        #     )
+                        #     for c in list(range(-4, 7))
+                        # ],
+                        # *[
+                        #     (
+                        #         DatasetTrain(CpuRec),
+                        #         SimpleTest(),
+                        #         AdaptedBytesComputer(
+                        #             AutoCorrelationComputer(128)
+                        #         ),
+                        #         cls.get_hyperparam_classifiers(10**c, 10**c),
+                        #         None,
+                        #         LabelEntry.IS_VARIABLE_INSTRUCTION_SIZE,
+                        #     )
+                        #     for c in list(range(-1, 7))
+                        # ],
                         *[
                             (
                                 DatasetTrain(CpuRec),
                                 SimpleTest(),
                                 AdaptedBytesComputer(FourierComputer(32)),
-                                cls.get_hyperparam_classifiers(10**c, 10**c),
+                                cls.get_hyperparam_classifiers(10**c, None),
                                 None,
                                 LabelEntry.IS_VARIABLE_INSTRUCTION_SIZE,
                             )
-                            for c in list(range(-2, 7))
+                            for c in list(range(-7, 10))
+                        ],
+                        *[
+                            (
+                                DatasetTrain(CpuRec),
+                                SimpleTest(),
+                                AdaptedBytesComputer(FourierComputer(512)),
+                                cls.get_hyperparam_classifiers(None, 10**c),
+                                None,
+                                LabelEntry.IS_VARIABLE_INSTRUCTION_SIZE,
+                            )
+                            for c in list(range(-7, 10))
                         ],
                     ],
                 ),
@@ -350,42 +361,53 @@ class SystemConfigurationPicker:
                 (
                     "hyperparams_instsize",
                     [
+                        # *[
+                        #     (
+                        #         DatasetTrain(CpuRec),
+                        #         SimpleTest(),
+                        #         AdaptedBytesComputer(
+                        #             AutoCorrelationComputer(128)
+                        #         ),
+                        #         cls.get_hyperparam_classifiers(10**c, None),
+                        #         None,
+                        #         LabelEntry.FIXED_INSTRUCTION_SIZE,
+                        #     )
+                        #     for c in list(range(-7, 8))
+                        # ],
+                        # *[
+                        #     (
+                        #         DatasetTrain(CpuRec),
+                        #         SimpleTest(),
+                        #         AdaptedBytesComputer(
+                        #             AutoCorrelationComputer(64)
+                        #         ),
+                        #         cls.get_hyperparam_classifiers(None, 10**c),
+                        #         None,
+                        #         LabelEntry.FIXED_INSTRUCTION_SIZE,
+                        #     )
+                        #     for c in list(range(-7, 8))
+                        # ],
                         *[
                             (
                                 DatasetTrain(CpuRec),
                                 SimpleTest(),
-                                AdaptedBytesComputer(
-                                    AutoCorrelationComputer(128)
-                                ),
+                                AdaptedBytesComputer(FourierComputer(32)),
                                 cls.get_hyperparam_classifiers(10**c, None),
                                 None,
                                 LabelEntry.FIXED_INSTRUCTION_SIZE,
                             )
-                            for c in list(range(-7, 8))
+                            for c in list(range(-7, 10))
                         ],
                         *[
                             (
                                 DatasetTrain(CpuRec),
                                 SimpleTest(),
-                                AdaptedBytesComputer(
-                                    AutoCorrelationComputer(64)
-                                ),
+                                AdaptedBytesComputer(FourierComputer(32)),
                                 cls.get_hyperparam_classifiers(None, 10**c),
                                 None,
                                 LabelEntry.FIXED_INSTRUCTION_SIZE,
                             )
-                            for c in list(range(-7, 8))
-                        ],
-                        *[
-                            (
-                                DatasetTrain(CpuRec),
-                                SimpleTest(),
-                                AdaptedBytesComputer(FourierComputer(128)),
-                                cls.get_hyperparam_classifiers(10**c, 10**c),
-                                None,
-                                LabelEntry.FIXED_INSTRUCTION_SIZE,
-                            )
-                            for c in list(range(-7, 8))
+                            for c in list(range(-7, 10))
                         ],
                         # *[
                         #     (
@@ -428,11 +450,11 @@ class SystemConfigurationPicker:
                                 AdaptedBytesComputer(
                                     AutoCorrelationComputer(2**c)
                                 ),
-                                cls.get_hyperparam_classifiers(10**1, 10**1),
+                                cls.get_classifiers(10**1, 10**1),
                                 None,
                                 LabelEntry.IS_VARIABLE_INSTRUCTION_SIZE,
                             )
-                            for c in list(range(1, 11))
+                            for c in list(range(4, 11))
                         ],
                     ],
                 ),
@@ -462,11 +484,11 @@ class SystemConfigurationPicker:
                                 AdaptedBytesComputer(
                                     AutoCorrelationComputer(2**c)
                                 ),
-                                cls.get_hyperparam_classifiers(10**1, 10**1),
+                                cls.get_classifiers(10**1, 10**1),
                                 None,
-                                LabelEntry.INSTRUCTION_SIZE,
+                                LabelEntry.FIXED_INSTRUCTION_SIZE,
                             )
-                            for c in list(range(1, 10))
+                            for c in list(range(4, 10))
                         ],
                     ],
                 ),
@@ -494,11 +516,11 @@ class SystemConfigurationPicker:
                                 DatasetTrain(CpuRec),
                                 SimpleTest(),
                                 AdaptedBytesComputer(FourierComputer(2**c)),
-                                cls.get_hyperparam_classifiers(10**1, None),
+                                cls.get_classifiers(10**1, None),
                                 None,
                                 LabelEntry.IS_VARIABLE_INSTRUCTION_SIZE,
                             )
-                            for c in list(range(1, 10))
+                            for c in list(range(4, 11))
                         ],
                         *[
                             (
@@ -509,7 +531,7 @@ class SystemConfigurationPicker:
                                 None,
                                 LabelEntry.IS_VARIABLE_INSTRUCTION_SIZE,
                             )
-                            for c in list(range(5, 10))
+                            for c in list(range(5, 11))
                         ],
                     ],
                 ),
@@ -537,11 +559,11 @@ class SystemConfigurationPicker:
                                 DatasetTrain(CpuRec),
                                 SimpleTest(),
                                 AdaptedBytesComputer(FourierComputer(2**c)),
-                                cls.get_hyperparam_classifiers(10**1, 10**1),
+                                cls.get_classifiers(10**1, 10**1),
                                 None,
                                 LabelEntry.FIXED_INSTRUCTION_SIZE,
                             )
-                            for c in list(range(5, 10))
+                            for c in list(range(4, 11))
                         ],
                     ],
                 ),
@@ -549,33 +571,102 @@ class SystemConfigurationPicker:
         )
 
     @classmethod
-    def isvar_precisions(cls) -> SystemConfiguration:
+    def __isvar_precisions_any(
+        cls,
+        test_mode: TestMode,
+        test_mode_byte_difference_primes: TestMode,
+        identifier: str,
+    ) -> SystemConfiguration:
+        autocorr_model_config = [
+            (
+                128,
+                LogisticRegression(
+                    max_iter=10_000,
+                    n_jobs=-1,
+                    random_state=cls.RANDOM_STATE,
+                    C=10**1,
+                ),
+            ),
+            (128, SVC(kernel="linear", random_state=cls.RANDOM_STATE, C=10**1)),
+            (
+                256,
+                RandomForestClassifier(
+                    n_jobs=-1, random_state=cls.RANDOM_STATE
+                ),
+            ),
+            (32, GaussianNB()),
+            (256, KNeighborsClassifier(1, n_jobs=-1)),
+            (256, KNeighborsClassifier(3, n_jobs=-1)),
+            (512, KNeighborsClassifier(5, n_jobs=-1)),
+            (128, DecisionTreeClassifier(random_state=cls.RANDOM_STATE)),
+            (
+                1024,
+                MLPClassifier(max_iter=10_000, random_state=cls.RANDOM_STATE),
+            ),
+        ]
+        fourier_model_config = [
+            (
+                32,
+                LogisticRegression(
+                    max_iter=10_000,
+                    n_jobs=-1,
+                    random_state=cls.RANDOM_STATE,
+                    C=10**1,
+                ),
+            ),
+            (512, SVC(kernel="linear", random_state=cls.RANDOM_STATE, C=10**1)),
+            (
+                512,
+                RandomForestClassifier(
+                    n_jobs=-1, random_state=cls.RANDOM_STATE
+                ),
+            ),
+            (64, GaussianNB()),
+            (16, KNeighborsClassifier(1, n_jobs=-1)),
+            (16, KNeighborsClassifier(3, n_jobs=-1)),
+            (16, KNeighborsClassifier(5, n_jobs=-1)),
+            (32, DecisionTreeClassifier(random_state=cls.RANDOM_STATE)),
+            (
+                256,
+                MLPClassifier(max_iter=10_000, random_state=cls.RANDOM_STATE),
+            ),
+        ]
         return SystemConfiguration.with_precision_visres(
             [
                 (
-                    "isvar_precisions",
+                    identifier,
                     [
+                        *[
+                            (
+                                DatasetTrain(CpuRec),
+                                test_mode,
+                                AdaptedBytesComputer(
+                                    AutoCorrelationComputer(lag)
+                                ),
+                                [classifier],
+                                None,
+                                LabelEntry.IS_VARIABLE_INSTRUCTION_SIZE,
+                            )
+                            for lag, classifier in autocorr_model_config
+                        ],
+                        *[
+                            (
+                                DatasetTrain(CpuRec),
+                                test_mode,
+                                AdaptedBytesComputer(
+                                    FourierComputer(fourier_num)
+                                ),
+                                [classifier],
+                                None,
+                                LabelEntry.IS_VARIABLE_INSTRUCTION_SIZE,
+                            )
+                            for fourier_num, classifier in fourier_model_config
+                        ],
                         (
                             DatasetTrain(CpuRec),
-                            SimpleTest(),
+                            test_mode_byte_difference_primes,
                             ByteDifferencePrimes(),
                             cls.get_classifiers(10**-1, 10**-2),
-                            None,
-                            LabelEntry.IS_VARIABLE_INSTRUCTION_SIZE,
-                        ),
-                        (
-                            DatasetTrain(CpuRec),
-                            SimpleTest(),
-                            AdaptedBytesComputer(AutoCorrelationComputer(128)),
-                            cls.get_classifiers(10**0, 10**0),
-                            None,
-                            LabelEntry.IS_VARIABLE_INSTRUCTION_SIZE,
-                        ),
-                        (
-                            DatasetTrain(CpuRec),
-                            SimpleTest(),
-                            AdaptedBytesComputer(FourierComputer(32)),
-                            cls.get_classifiers(10**1, 10**1),
                             None,
                             LabelEntry.IS_VARIABLE_INSTRUCTION_SIZE,
                         ),
@@ -585,117 +676,125 @@ class SystemConfigurationPicker:
         )
 
     @classmethod
-    def isvar_precisions_code(cls) -> SystemConfiguration:
-        return SystemConfiguration.with_precision_visres(
-            [
-                (
-                    "isvar_precisions_code",
-                    [
-                        (
-                            DatasetTrain(CpuRec),
-                            DatasetTest(IsaDetectCode()),
-                            AdaptedBytesComputer(AutoCorrelationComputer(128)),
-                            cls.get_classifiers(10**0, 10**0),
-                            None,
-                            LabelEntry.IS_VARIABLE_INSTRUCTION_SIZE,
-                        ),
-                        (
-                            DatasetTrain(CpuRec),
-                            DatasetTest(IsaDetectCode()),
-                            AdaptedBytesComputer(FourierComputer(32)),
-                            cls.get_classifiers(10**1, 10**1),
-                            None,
-                            LabelEntry.IS_VARIABLE_INSTRUCTION_SIZE,
-                        ),
-                        (
-                            DatasetTrain(CpuRec),
-                            DatasetTest(IsaDetectCode(1500)),
-                            ByteDifferencePrimes(),
-                            cls.get_classifiers(10**-1, 10**-2),
-                            None,
-                            LabelEntry.IS_VARIABLE_INSTRUCTION_SIZE,
-                        ),
-                    ],
-                ),
-            ],
+    def isvar_precisions(cls) -> SystemConfiguration:
+        return cls.__isvar_precisions_any(
+            SimpleTest(), SimpleTest(), "isvar_precisions"
         )
 
     @classmethod
     def isvar_precisions_full(cls) -> SystemConfiguration:
-        return SystemConfiguration.with_precision_visres(
-            [
-                (
-                    "isvar_precisions_full",
-                    [
-                        (
-                            DatasetTrain(CpuRec),
-                            DatasetTest(IsaDetect()),
-                            AdaptedBytesComputer(AutoCorrelationComputer(128)),
-                            cls.get_classifiers(10**0, 10**0),
-                            None,
-                            LabelEntry.IS_VARIABLE_INSTRUCTION_SIZE,
-                        ),
-                        (
-                            DatasetTrain(CpuRec),
-                            DatasetTest(IsaDetect()),
-                            AdaptedBytesComputer(FourierComputer(32)),
-                            cls.get_classifiers(10**1, 10**1),
-                            None,
-                            LabelEntry.IS_VARIABLE_INSTRUCTION_SIZE,
-                        ),
-                        (
-                            DatasetTrain(CpuRec),
-                            DatasetTest(IsaDetect(1500)),
-                            ByteDifferencePrimes(),
-                            cls.get_classifiers(10**-1, 10**-2),
-                            None,
-                            LabelEntry.IS_VARIABLE_INSTRUCTION_SIZE,
-                        ),
-                    ],
-                ),
-            ],
+        return cls.__isvar_precisions_any(
+            DatasetTest(IsaDetectFull()),
+            DatasetTest(IsaDetectFull(1500)),
+            "isvar_precisions_full",
+        )
+
+    @classmethod
+    def isvar_precisions_code(cls) -> SystemConfiguration:
+        return cls.__isvar_precisions_any(
+            DatasetTest(IsaDetectCode()),
+            DatasetTest(IsaDetectCode(1500)),
+            "isvar_precisions_code",
         )
 
     @classmethod
     def __instsize_precisions_any(
         cls, test_mode: TestMode, identifier: str
     ) -> SystemConfiguration:
+        autocorr_model_config = [
+            (
+                128,
+                LogisticRegression(
+                    max_iter=10_000,
+                    n_jobs=-1,
+                    random_state=cls.RANDOM_STATE,
+                    C=10**1,
+                ),
+            ),
+            (64, SVC(kernel="linear", random_state=cls.RANDOM_STATE, C=10**1)),
+            (
+                256,
+                RandomForestClassifier(
+                    n_jobs=-1, random_state=cls.RANDOM_STATE
+                ),
+            ),
+            (256, GaussianNB()),
+            (32, KNeighborsClassifier(1, n_jobs=-1)),
+            (128, KNeighborsClassifier(3, n_jobs=-1)),
+            (512, KNeighborsClassifier(5, n_jobs=-1)),
+            (128, DecisionTreeClassifier(random_state=cls.RANDOM_STATE)),
+            (32, MLPClassifier(max_iter=10_000, random_state=cls.RANDOM_STATE)),
+        ]
+        fourier_model_config = [
+            (
+                32,
+                LogisticRegression(
+                    max_iter=10_000,
+                    n_jobs=-1,
+                    random_state=cls.RANDOM_STATE,
+                    C=10**-1,
+                ),
+            ),
+            (
+                32,
+                SVC(kernel="linear", random_state=cls.RANDOM_STATE, C=10**0),
+            ),
+            (
+                256,
+                RandomForestClassifier(
+                    n_jobs=-1, random_state=cls.RANDOM_STATE
+                ),
+            ),
+            (64, GaussianNB()),
+            (512, KNeighborsClassifier(1, n_jobs=-1)),
+            (512, KNeighborsClassifier(3, n_jobs=-1)),
+            (64, KNeighborsClassifier(5, n_jobs=-1)),
+            (16, DecisionTreeClassifier(random_state=cls.RANDOM_STATE)),
+            (
+                128,
+                MLPClassifier(max_iter=10_000, random_state=cls.RANDOM_STATE),
+            ),
+        ]
         return SystemConfiguration.with_precision_visres(
             [
                 (
                     identifier,
                     [
+                        *[
+                            (
+                                DatasetTrain(CpuRec),
+                                test_mode,
+                                AdaptedBytesComputer(
+                                    AutoCorrelationComputer(lag)
+                                ),
+                                [classifier],
+                                None,
+                                LabelEntry.FIXED_INSTRUCTION_SIZE,
+                            )
+                            for lag, classifier in autocorr_model_config
+                        ],
+                        *[
+                            (
+                                DatasetTrain(CpuRec),
+                                test_mode,
+                                AdaptedBytesComputer(
+                                    FourierComputer(fourier_num)
+                                ),
+                                [classifier],
+                                None,
+                                LabelEntry.FIXED_INSTRUCTION_SIZE,
+                            )
+                            for fourier_num, classifier in fourier_model_config
+                        ],
                         (
                             DatasetTrain(CpuRec),
                             test_mode,
-                            AdaptedBytesComputer(AutoCorrelationComputer(128)),
-                            cls.get_hyperparam_classifiers(10**1, None),
+                            AdaptedBytesComputer(
+                                AutoCorrelationPeakComputer(32, n_peaks=3)
+                            ),
+                            cls.get_classifiers(10**1, 10**1),
                             None,
-                            LabelEntry.INSTRUCTION_SIZE,
-                        ),
-                        (
-                            DatasetTrain(CpuRec),
-                            test_mode,
-                            AdaptedBytesComputer(AutoCorrelationComputer(64)),
-                            cls.get_hyperparam_classifiers(None, 10**1),
-                            None,
-                            LabelEntry.INSTRUCTION_SIZE,
-                        ),
-                        (
-                            DatasetTrain(CpuRec),
-                            test_mode,
-                            AdaptedBytesComputer(FourierComputer(32)),
-                            cls.get_hyperparam_classifiers(10**-4, 10**-4),
-                            None,
-                            LabelEntry.INSTRUCTION_SIZE,
-                        ),
-                        (
-                            DatasetTrain(CpuRec),
-                            test_mode,
-                            AdaptedBytesComputer(AutoCorrelationComputer(2)),
-                            cls.get_hyperparam_classifiers(10**1, 10**1),
-                            None,
-                            LabelEntry.INSTRUCTION_SIZE,
+                            LabelEntry.FIXED_INSTRUCTION_SIZE,
                         ),
                     ],
                 ),
@@ -711,7 +810,7 @@ class SystemConfigurationPicker:
     @classmethod
     def instsize_precisions_full(cls) -> SystemConfiguration:
         return cls.__instsize_precisions_any(
-            DatasetTest(IsaDetect()), "instsize_precisions_full"
+            DatasetTest(IsaDetectFull()), "instsize_precisions_full"
         )
 
     @classmethod

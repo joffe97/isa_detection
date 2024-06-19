@@ -18,7 +18,7 @@ from domains.visualizer.visualizers.configuration_info import ConfigurationInfo
 Setup().with_all_config()
 from config import Config
 
-from domains.dataset import IsaDetectCode, IsaDetect, CpuRec
+from domains.dataset import IsaDetectCode, IsaDetectFull, CpuRec
 from domains.visualizer.result_savers.visualizer_saver import VisualizerSaver
 from domains.feature.feature_computer_container import FeatureComputerContainer
 from domains.feature.feature_computer_container_collection import (
@@ -350,10 +350,10 @@ def run_system():
     #     Config.START_TIME = time.time()
     #     System(system_modes).run_and_visualize(visualizers, result_savers)
 
-    SystemConfigurationPicker.hyperparams_endianness_full_10_20().run_system()
-    # SystemConfigurationPicker.hyperparams_endianness_code().run_system()
+    # SystemConfigurationPicker.hyperparams_endianness_full_30_100().run_system()
+    SystemConfigurationPicker.hyperparams_endianness_code().run_system()
     # SystemConfigurationPicker.hyperparams_isvar().run_system()
-    # # SystemConfigurationPicker.hyperparams_instsize().run_system()
+    # SystemConfigurationPicker.hyperparams_instsize().run_system()
     # SystemConfigurationPicker.isvar_autocorr_comparison().run_system()
     # SystemConfigurationPicker.instsize_autocorr_comparison().run_system()
     # SystemConfigurationPicker.isvar_fourier_comparison().run_system()
@@ -362,6 +362,10 @@ def run_system():
     # SystemConfigurationPicker.isvar_precisions().run_system()
     # SystemConfigurationPicker.isvar_precisions_full().run_system()
     # SystemConfigurationPicker.isvar_precisions_code().run_system()
+    #
+    # SystemConfigurationPicker.instsize_precisions().run_system()
+    # SystemConfigurationPicker.instsize_precisions_full().run_system()
+    # SystemConfigurationPicker.instsize_precisions_code().run_system()
 
 
 if __name__ == "__main__":

@@ -12,54 +12,88 @@ class PrecisionsBarChart(ResultSaver):
         super().__init__()
         self.title = title
 
-    def save_in_directory(self, isa_model_info_collection: ISAModelInfoCollection) -> None:
+    def save_in_directory(
+        self, isa_model_info_collection: ISAModelInfoCollection
+    ) -> None:
         plot_identifier_feature_mapping = dict()
         for isa_model_info in isa_model_info_collection.collection:
             configuration = isa_model_info.configuration
             results = isa_model_info.results
 
             plot_identifier = "/".join(
-                [configuration.target_label.value, str(configuration.files_per_architecture)]
+                [
+                    configuration.target_label.value,
+                    str(configuration.files_per_architecture),
+                ]
             )
-            all_plot_identifier = "/".join([configuration.target_label.value, "all"])
+            all_plot_identifier = "/".join(
+                [configuration.target_label.value, "all"]
+            )
 
             classifier_str = str(configuration.classifier)
             classifier_str_split = classifier_str.split("(")
             classifier_str_type = classifier_str_split[0]
 
             classifier_arg_strs = [
-                (arg_value := configuration.classifier.__dict__.get(arg)) and f"{arg}={arg_value}"
+                (arg_value := configuration.classifier.__dict__.get(arg))
+                and f"{arg}={arg_value}"
                 for arg in ["kernel", "n_neighbors"]
             ]
             readable_classifier_str = ", ".join(
-                map(str, filter(None, [classifier_str_type, *classifier_arg_strs]))
+                map(
+                    str,
+                    filter(None, [classifier_str_type, *classifier_arg_strs]),
+                )
             )
 
-            feature_identifier = configuration.feature_computer_container_collection.identifier(
-                ignore_features_post_computers=[KeepSpecified]
+            feature_identifier = (
+                configuration.feature_computer_container_collection.identifier(
+                    ignore_features_post_computers=[KeepSpecified]
+                ).split("_")[0]
             )
+            if feature_identifier.startswith("Fourier"):
+                feature_identifier = "Fourier"
 
             mean_precision = results.mean_precision()
 
             for identifier in [plot_identifier, all_plot_identifier]:
-                features_classifier_mapping = plot_identifier_feature_mapping.setdefault(identifier, dict())
-                classifier_precision_mapping = features_classifier_mapping.setdefault(
-                    feature_identifier, dict()
+                features_classifier_mapping = (
+                    plot_identifier_feature_mapping.setdefault(
+                        identifier, dict()
+                    )
                 )
-                classifier_precision_mapping[readable_classifier_str] = mean_precision
+                classifier_precision_mapping = (
+                    features_classifier_mapping.setdefault(
+                        feature_identifier, dict()
+                    )
+                )
+                classifier_precision_mapping[readable_classifier_str] = (
+                    mean_precision
+                )
 
         bar_width = 0.2
 
-        for plot_identifier, feature_mapping in sorted(plot_identifier_feature_mapping.items()):
+        for plot_identifier, feature_mapping in sorted(
+            plot_identifier_feature_mapping.items()
+        ):
             _, ax = plt.subplots(figsize=(9, 6))
             xticklabels = []
-            for feature_i, (feature, classifier_mapping) in enumerate(sorted(feature_mapping.items())):
+            for feature_i, (feature, classifier_mapping) in enumerate(
+                sorted(feature_mapping.items())
+            ):
                 index = np.arange(len(classifier_mapping))
-                classifier_mapping_sorted = dict(sorted(classifier_mapping.items()))
+                classifier_mapping_sorted = dict(
+                    sorted(classifier_mapping.items())
+                )
                 if feature_i == 0:
                     xticklabels = list(classifier_mapping_sorted.keys())
                 precisions = classifier_mapping_sorted.values()
-                bars = ax.bar(index + feature_i * bar_width, precisions, bar_width, label=feature)
+                bars = ax.bar(
+                    index + feature_i * bar_width,
+                    precisions,
+                    bar_width,
+                    label=feature,
+                )
                 for rect in bars:
                     rect: Rectangle
                     height = rect.get_height()

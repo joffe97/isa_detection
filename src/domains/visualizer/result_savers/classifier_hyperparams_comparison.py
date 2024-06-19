@@ -71,6 +71,9 @@ class ClassifierHyperparamsComparison(ResultSaver):
                 )
             ).split("_")[0]
 
+            if feature_identifier.startswith("Fourier"):
+                feature_identifier = "Fourier"
+
             if self.feature_identifier_override is not None:
                 feature_identifier = self.feature_identifier_override
 

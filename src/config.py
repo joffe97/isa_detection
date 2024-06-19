@@ -22,6 +22,8 @@ class Config:
     CACHE_DISABLED = False
     RUN_RESULT_SAVERS = False
 
+    CPU_CORES = 30
+
     START_TIME = time.time()
 
     __runtime_identifier = None

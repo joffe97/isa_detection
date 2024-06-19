@@ -1,6 +1,6 @@
 from typing import Optional
-import numpy as np
 import math
+import numpy as np
 from numpy.fft import fft
 from .bytes_computer import BytesComputer
 
@@ -14,23 +14,22 @@ class FourierComputer(BytesComputer):
         return self.data_half_len * 2 + 1 if self.data_half_len else None
 
     def compute(self, data: bytes) -> list[float]:
-        fft_real = fft(list(iter(data))).real
+        fft_abs = list(np.abs(fft(list(iter(data)))))
 
         if self.data_half_len is None:
-            return fft_real
+            return fft_abs
 
-        missing_len = len(fft_real) - self.data_len
+        missing_len = len(fft_abs) - self.data_len  # type: ignore
         if missing_len > 0:
             pad_width = math.ceil(missing_len / 2)
-            fft_real = np.pad(fft_real, pad_width)
+            fft_abs = np.pad(fft_abs, pad_width)
 
-        fft_middle_index = len(fft_real) // 2
-        return fft_real[
+        fft_middle_index = len(fft_abs) // 2
+        return fft_abs[
             (fft_middle_index - self.data_half_len) : (
                 fft_middle_index + self.data_half_len + 1
             )
         ]
-        # return list(fft_real[:return_len])
 
     def get_group_name(
         self,
@@ -52,8 +51,8 @@ class FourierComputer(BytesComputer):
             return None
         return list(range(-self.data_half_len, self.data_half_len + 1))
 
-    # def y_scale(self):
-    #     return "symlog"
+    def y_scale(self):
+        return "symlog"
 
     def labels(self) -> tuple[str, str]:
         return ("Frequency", "Amplitude")

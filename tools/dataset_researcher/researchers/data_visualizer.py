@@ -1,12 +1,16 @@
 from pathlib import Path
+from typing import Optional
 from matplotlib import pyplot as plt
 from . import FileResearcher
 
 
 class DataVisualizer(FileResearcher):
+    def __init__(self, max_read: Optional[int]) -> None:
+        self.max_read = max_read
+
     def _research_file(self, architecture: str, path: Path, group_name: str):
         with open(path, "rb") as f:
-            data = f.read()
+            data = f.read(self.max_read)
 
         data_ints = list(map(float, data))
 
