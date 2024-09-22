@@ -9,6 +9,7 @@ from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
 
 from config import Config
+from domains.dataset.binary_file_dataset import BinaryFileDataset
 from domains.dataset.cpu_rec import CpuRec
 from domains.dataset.isa_detect import IsaDetectFull
 from domains.dataset.isa_detect_code import IsaDetectCode
@@ -571,6 +572,79 @@ class SystemConfigurationPicker:
         )
 
     @classmethod
+    def __endianness_precisions_any(
+        cls,
+        train_dataset: type[BinaryFileDataset],
+        identifier: str,
+        b_file_count: int,
+        es_lr_c: int,
+        es_svc_l_c: int,
+        b_lr_c: int,
+        b_svc_l_c: int,
+    ) -> SystemConfiguration:
+        feature_param_mapping = [
+            (EndiannessSignatures(), (es_lr_c, es_svc_l_c), None),
+            (Bigrams(), (b_lr_c, b_svc_l_c), b_file_count),
+        ]
+
+        return SystemConfiguration.with_precision_visres(
+            [
+                (
+                    identifier,
+                    [
+                        (
+                            DatasetTrain(train_dataset),
+                            SimpleTest(),
+                            feature,
+                            cls.get_classifiers(lr_c, svc_p),
+                            file_count,
+                            LabelEntry.ENDIANNESS,
+                        )
+                        for feature, (
+                            lr_c,
+                            svc_p,
+                        ), file_count in feature_param_mapping
+                        # (
+                        #     DatasetTrain(CpuRec),
+                        #     test_mode,
+                        #     AdaptedBytesComputer(
+                        #         AutoCorrelationComputer(lag)
+                        #     ),
+                        #     [classifier],
+                        #     None,
+                        #     LabelEntry.IS_VARIABLE_INSTRUCTION_SIZE,
+                        # )
+                        # for lag, classifier in autocorr_model_config
+                    ],
+                )
+            ]
+        )
+
+    @classmethod
+    def endianness_precisions_full(cls) -> SystemConfiguration:
+        return cls.__endianness_precisions_any(
+            IsaDetectFull,
+            "paper_endianness_full",
+            100,
+            10**10,
+            10**11,
+            10**5,
+            10**3,
+        )
+
+    @classmethod
+    def endianness_precisions_code(cls) -> SystemConfiguration:
+        return cls.__endianness_precisions_any(
+            IsaDetectCode,
+            "paper_endianness_codeonly",
+            150,
+            10**10,
+            10**8,
+            10**8,
+            10**2,
+        )
+
+    @classmethod
     def __isvar_precisions_any(
         cls,
         test_mode: TestMode,
@@ -649,27 +723,27 @@ class SystemConfigurationPicker:
                             )
                             for lag, classifier in autocorr_model_config
                         ],
-                        *[
-                            (
-                                DatasetTrain(CpuRec),
-                                test_mode,
-                                AdaptedBytesComputer(
-                                    FourierComputer(fourier_num)
-                                ),
-                                [classifier],
-                                None,
-                                LabelEntry.IS_VARIABLE_INSTRUCTION_SIZE,
-                            )
-                            for fourier_num, classifier in fourier_model_config
-                        ],
-                        (
-                            DatasetTrain(CpuRec),
-                            test_mode_byte_difference_primes,
-                            ByteDifferencePrimes(),
-                            cls.get_classifiers(10**-1, 10**-2),
-                            None,
-                            LabelEntry.IS_VARIABLE_INSTRUCTION_SIZE,
-                        ),
+                        # *[
+                        #     (
+                        #         DatasetTrain(CpuRec),
+                        #         test_mode,
+                        #         AdaptedBytesComputer(
+                        #             FourierComputer(fourier_num)
+                        #         ),
+                        #         [classifier],
+                        #         None,
+                        #         LabelEntry.IS_VARIABLE_INSTRUCTION_SIZE,
+                        #     )
+                        #     for fourier_num, classifier in fourier_model_config
+                        # ],
+                        # (
+                        #     DatasetTrain(CpuRec),
+                        #     test_mode_byte_difference_primes,
+                        #     ByteDifferencePrimes(),
+                        #     cls.get_classifiers(10**-1, 10**-2),
+                        #     None,
+                        #     LabelEntry.IS_VARIABLE_INSTRUCTION_SIZE,
+                        # ),
                     ],
                 ),
             ],
@@ -678,7 +752,7 @@ class SystemConfigurationPicker:
     @classmethod
     def isvar_precisions(cls) -> SystemConfiguration:
         return cls.__isvar_precisions_any(
-            SimpleTest(), SimpleTest(), "isvar_precisions"
+            SimpleTest(), SimpleTest(), "paper_isvar_precisions"
         )
 
     @classmethod
@@ -773,29 +847,29 @@ class SystemConfigurationPicker:
                             )
                             for lag, classifier in autocorr_model_config
                         ],
-                        *[
-                            (
-                                DatasetTrain(CpuRec),
-                                test_mode,
-                                AdaptedBytesComputer(
-                                    FourierComputer(fourier_num)
-                                ),
-                                [classifier],
-                                None,
-                                LabelEntry.FIXED_INSTRUCTION_SIZE,
-                            )
-                            for fourier_num, classifier in fourier_model_config
-                        ],
-                        (
-                            DatasetTrain(CpuRec),
-                            test_mode,
-                            AdaptedBytesComputer(
-                                AutoCorrelationPeakComputer(32, n_peaks=3)
-                            ),
-                            cls.get_classifiers(10**1, 10**1),
-                            None,
-                            LabelEntry.FIXED_INSTRUCTION_SIZE,
-                        ),
+                        # *[
+                        #     (
+                        #         DatasetTrain(CpuRec),
+                        #         test_mode,
+                        #         AdaptedBytesComputer(
+                        #             FourierComputer(fourier_num)
+                        #         ),
+                        #         [classifier],
+                        #         None,
+                        #         LabelEntry.FIXED_INSTRUCTION_SIZE,
+                        #     )
+                        #     for fourier_num, classifier in fourier_model_config
+                        # ],
+                        # (
+                        #     DatasetTrain(CpuRec),
+                        #     test_mode,
+                        #     AdaptedBytesComputer(
+                        #         AutoCorrelationPeakComputer(32, n_peaks=3)
+                        #     ),
+                        #     cls.get_classifiers(10**1, 10**1),
+                        #     None,
+                        #     LabelEntry.FIXED_INSTRUCTION_SIZE,
+                        # ),
                     ],
                 ),
             ],
@@ -804,7 +878,7 @@ class SystemConfigurationPicker:
     @classmethod
     def instsize_precisions(cls) -> SystemConfiguration:
         return cls.__instsize_precisions_any(
-            SimpleTest(), "instsize_precisions"
+            SimpleTest(), "paper_instsize_precisions"
         )
 
     @classmethod

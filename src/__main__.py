@@ -351,7 +351,7 @@ def run_system():
     #     System(system_modes).run_and_visualize(visualizers, result_savers)
 
     # SystemConfigurationPicker.hyperparams_endianness_full_30_100().run_system()
-    SystemConfigurationPicker.hyperparams_endianness_code().run_system()
+    # SystemConfigurationPicker.hyperparams_endianness_code().run_system()
     # SystemConfigurationPicker.hyperparams_isvar().run_system()
     # SystemConfigurationPicker.hyperparams_instsize().run_system()
     # SystemConfigurationPicker.isvar_autocorr_comparison().run_system()
@@ -366,6 +366,10 @@ def run_system():
     # SystemConfigurationPicker.instsize_precisions().run_system()
     # SystemConfigurationPicker.instsize_precisions_full().run_system()
     # SystemConfigurationPicker.instsize_precisions_code().run_system()
+    #
+    SystemConfigurationPicker.endianness_precisions_full().run_system()
+    SystemConfigurationPicker.isvar_precisions().run_system()
+    SystemConfigurationPicker.instsize_precisions().run_system()
 
 
 if __name__ == "__main__":

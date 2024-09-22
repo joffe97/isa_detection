@@ -25,17 +25,27 @@ class Covariance(FileResearcher):
                 if end_j >= len(covariances):
                     continue
                 cur_j_n_gram = data[j:end_j]
-                if all(i_byte == j_byte for i_byte, j_byte in zip(cur_i_n_gram, cur_j_n_gram)):
+                if all(
+                    i_byte == j_byte
+                    for i_byte, j_byte in zip(cur_i_n_gram, cur_j_n_gram)
+                ):
                     covariances[i] += 1
 
         matches_count_fft = np.fft.fft(covariances)
         matches_count_fft_real, matches_count_fft_imag = list(
-            zip(*map(lambda complex: (complex.real, complex.imag), matches_count_fft))
+            zip(
+                *map(
+                    lambda complex: (complex.real, complex.imag),
+                    matches_count_fft,
+                )
+            )
         )
 
         fig, axs = plt.subplots(3)
         line_width = 0.3
-        axs[0].plot(list(range(len(covariances))), covariances, linewidth=line_width)
+        axs[0].plot(
+            list(range(len(covariances))), covariances, linewidth=line_width
+        )
         axs[1].plot(
             list(range(len(matches_count_fft_real))),
             list(map(abs, map(float, matches_count_fft_real))),
@@ -48,7 +58,7 @@ class Covariance(FileResearcher):
         )
 
         plot_path = self._create_result_path_with_architecture_and_binary_file(
-            group_name, architecture, path.name, ".png"
+            group_name, architecture, path.name, ".eps"
         )
         plot_path.parent.mkdir(parents=True, exist_ok=True)
         plt.savefig(plot_path, dpi=300)

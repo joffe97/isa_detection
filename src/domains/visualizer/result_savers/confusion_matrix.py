@@ -19,17 +19,21 @@ class ConfusionMatrix(ResultSaver):
         identifier = "/".join([configuration_identifier, architecture_text])
         plot_title = "\n".join([configuration_str, architecture_text])
 
-        display = ConfusionMatrixDisplay.from_predictions(y_true, y_pred, labels=labels)
+        display = ConfusionMatrixDisplay.from_predictions(
+            y_true, y_pred, labels=labels
+        )
         ax = plt.axes()
         ax.set_title(plot_title)
         display.plot(ax=ax)
 
-        cur_path = cls._filepath_for_identifier(".png", identifier)
+        cur_path = cls._filepath_for_identifier(".eps", identifier)
         cur_path.parent.mkdir(parents=True, exist_ok=True)
         plt.savefig(cur_path)
         plt.close()
 
-    def save_in_directory(self, isa_model_info_collection: ISAModelInfoCollection) -> None:
+    def save_in_directory(
+        self, isa_model_info_collection: ISAModelInfoCollection
+    ) -> None:
         for isa_model_info in isa_model_info_collection.collection:
             configuration = isa_model_info.configuration
             configuration_identifier = configuration.identifier()

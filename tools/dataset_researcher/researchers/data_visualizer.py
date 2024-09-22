@@ -18,7 +18,7 @@ class DataVisualizer(FileResearcher):
         plt.plot(data_ints, linewidth=line_width)
 
         plot_path = self._create_result_path_with_architecture_and_binary_file(
-            group_name, architecture, path.name, ".png"
+            group_name, architecture, path.name, ".eps"
         )
         plot_path.parent.mkdir(parents=True, exist_ok=True)
         plt.savefig(plot_path, dpi=300)

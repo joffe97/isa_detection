@@ -18,6 +18,10 @@ class AutoCorrelationFftComputer(BytesComputer):
 
     def compute(self, data: bytes) -> list[int]:
         autocorr_data = AutoCorrelationComputer(len(data)).compute(data)
+
+        if (len(autocorr_data) % 2) == 1:
+            autocorr_data = autocorr_data[:-1]
+
         fft_real = np.abs(fft(autocorr_data))
 
         if (data_len := self.data_len) is not None:
@@ -53,6 +57,9 @@ class AutoCorrelationFftComputer(BytesComputer):
 
     def labels(self) -> tuple[str, str]:
         return ("Frequency", "Amplitude")
+
+    def y_scale(self):
+        return "symlog"
 
     def identifier(self) -> str:
         autocorr_str = "AutoCorrelationFft"

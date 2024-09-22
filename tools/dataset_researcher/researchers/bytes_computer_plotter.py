@@ -62,7 +62,7 @@ class BytesComputerPlotter(Researcher):
                 plot_path = self._create_result_path(
                     architecture_group_name,
                     file_name,
-                    ".png",
+                    ".eps",
                     class_name_override=class_name_override,
                 )
                 plotter.plot(
@@ -77,7 +77,7 @@ class BytesComputerPlotter(Researcher):
                 plot_path = self._create_result_path(
                     architecture_group_name,
                     "_mean",
-                    ".png",
+                    ".eps",
                     class_name_override=class_name_override,
                 )
                 plotter.plot(
@@ -106,7 +106,7 @@ class BytesComputerPlotter(Researcher):
             )
             and (
                 instruction_size := architecture_file_datas.find_label_value(
-                    LabelEntry.INSTRUCTION_SIZE
+                    LabelEntry.FIXED_INSTRUCTION_SIZE
                 )
             )
             is not None
@@ -121,7 +121,7 @@ class BytesComputerPlotter(Researcher):
 
         instruction_width_data_means_mapping = (
             architecture_data_mapping.get_means_grouped_by_label_entry(
-                LabelEntry.FIXED_INSTRUCTION_SIZE
+                LabelEntry.FIXED_INSTRUCTION_SIZE,
             )
         )
 
@@ -137,7 +137,7 @@ class BytesComputerPlotter(Researcher):
             return self._create_result_path(
                 group_name,
                 filename,
-                ".png",
+                ".eps",
                 class_name_override=class_name_override,
             )
 
@@ -149,12 +149,22 @@ class BytesComputerPlotter(Researcher):
             line_group_mapping=architecture_data_means_group_mapping,
         )
 
+        instruction_type_line_group_mapping = dict(
+            (str(label), None)
+            for label in instruction_type_data_means_mapping.keys()
+        )
+        instruction_width_line_group_mapping = dict(
+            (label, "bits")
+            for label in instruction_width_data_means_mapping.keys()
+        )
+
         mean_plotter = self.__plotter()
         mean_plotter.plot(
             self.bytes_computer.x_labels(),
             instruction_type_data_means_mapping,
             f"{dataset.identifier()} - Type means",
             create_file_path_func("typemean"),
+            line_group_mapping=instruction_type_line_group_mapping,
         )
 
         mean_plotter.plot(
@@ -162,6 +172,7 @@ class BytesComputerPlotter(Researcher):
             instruction_width_data_means_mapping,
             f"{dataset.identifier()} - Size means",
             create_file_path_func("sizemean"),
+            line_group_mapping=instruction_width_line_group_mapping,
         )
 
         self._plot_file_data_mappings(architecture_data_mapping)

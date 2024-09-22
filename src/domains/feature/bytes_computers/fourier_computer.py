@@ -14,7 +14,10 @@ class FourierComputer(BytesComputer):
         return self.data_half_len * 2 + 1 if self.data_half_len else None
 
     def compute(self, data: bytes) -> list[float]:
-        fft_abs = list(np.abs(fft(list(iter(data)))))
+        data_list = list(iter(data))
+        if (len(data_list) % 2) == 1:
+            data_list = data_list[:-1]
+        fft_abs = list(np.abs(fft(data_list)))
 
         if self.data_half_len is None:
             return fft_abs

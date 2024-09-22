@@ -138,7 +138,7 @@ class ClassifierHyperparamsComparison(ResultSaver):
                 ax.set_ylim(top=1.0)
 
                 fig_path = self._filepath_for_identifier(
-                    ".png", f"{plot_identifier}_{feature_str}"
+                    ".eps", f"{plot_identifier}_{feature_str}"
                 )
                 fig_path.parent.mkdir(parents=True, exist_ok=True)
 

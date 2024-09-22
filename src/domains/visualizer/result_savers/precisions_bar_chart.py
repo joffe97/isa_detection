@@ -46,6 +46,9 @@ class PrecisionsBarChart(ResultSaver):
                 )
             )
 
+            if classifier_str_type == "KNeighborsClassifier":
+                readable_classifier_str = f"{configuration.classifier.__dict__.get('n_neighbors')}NeighborsClassifier"
+
             feature_identifier = (
                 configuration.feature_computer_container_collection.identifier(
                     ignore_features_post_computers=[KeepSpecified]
@@ -72,6 +75,7 @@ class PrecisionsBarChart(ResultSaver):
                 )
 
         bar_width = 0.2
+        font_size = 10
 
         for plot_identifier, feature_mapping in sorted(
             plot_identifier_feature_mapping.items()
@@ -104,18 +108,19 @@ class PrecisionsBarChart(ResultSaver):
                         ha="center",
                         va="bottom",
                         rotation=90,
-                        fontsize=7,
+                        fontsize=font_size,
                     )
 
-            ax.set_xlabel("Classifier")
-            ax.set_ylabel("Accuracy")
+            ax.set_xlabel("Classifier", fontsize=font_size)
+            ax.set_ylabel("Accuracy", fontsize=font_size)
             ax.set_title(self.title)
-            ax.set_xticks(index + bar_width / 2)
-            ax.set_xticklabels(xticklabels, rotation=90)
-            ax.legend(loc="lower left")
+            ax.set_xticks(index)
+            ax.set_xticklabels(xticklabels, rotation=45, fontsize=font_size)
+            ax.legend(loc="lower left", fontsize=font_size)
             ax.set_ylim(top=1.1)
+            ax.yaxis.label.set_fontsize(font_size)
 
-            fig_path = self._filepath_for_identifier(".png", plot_identifier)
+            fig_path = self._filepath_for_identifier(".eps", plot_identifier)
             fig_path.parent.mkdir(parents=True, exist_ok=True)
 
             plt.savefig(fig_path, bbox_inches="tight")

@@ -52,12 +52,14 @@ def autocorr_plotfunc(
 if __name__ == "__main__":
     # MAX_READ = 64000
     MAX_READ = None
-    # MAX_READ = 1000
-    # MAX_READ = 10
+    # MAX_READ = 10000
     # MAX_READ = 20000
     # datasets = [CpuRec(), IsaDetectCode(100)]
     # datasets = [IsaDetectCode(5), CpuRec()]
-    datasets = [CpuRec(), IsaDetectCode(1), IsaDetectFull(1)]
+    datasets = [CpuRec()]  # , IsaDetectCode(10), IsaDetectFull(10)]
+    # datasets = [CpuRec(), IsaDetectCode(1), IsaDetectFull(1)]
+    # datasets = [CpuRec()]
+    # datasets = [IsaDetectCode(10)]
     # datasets = [IsaDetectCode(5)]
     # datasets = [SinusSignal()]
     for dataset in datasets:
@@ -66,8 +68,9 @@ if __name__ == "__main__":
         #     autocorr_times=1,
         #     max_data_len_for_higher_autocorr=1000,
         # )
-        bytes_computer = FourierComputer(128)
-        # bytes_computer = AutoCorrelationComputer(32)
+        # bytes_computer = FourierComputer(128)
+        # bytes_computer = FourierComputer(32)
+        bytes_computer = AutoCorrelationComputer(32)
         # bytes_computer = AutoCorrelationFftComputer(32)
         # bytes_computer = AutoCorrelationFftComputer(16)
         # bytes_computer = FourierComputer(32)
